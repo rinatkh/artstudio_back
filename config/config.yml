@@ -1,0 +1,16 @@
+Server:
+  host: '127.0.0.1'
+  port: '8080'
+  show_unknown_errors_in_response: 1
+
+Logger:
+  level: 'debug'
+
+Postgres:
+  host: 'postgres'
+  port: '5432'
+  user: 'postgres'
+  password: 'postgres'
+  DBName: 'docker'
+  sslMode: 'disable'
+  pgDriver: 'pgx'

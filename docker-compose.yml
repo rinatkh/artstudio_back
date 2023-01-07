@@ -1,0 +1,27 @@
+version: '2.14'
+
+services:
+  service:
+    ports:
+      - "8080:8080"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: service
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./db/data.sql:/docker-entrypoint-initdb.d/data.sql
+      - /var/local/db/docker/:/var/lib/postgresql/data
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=docker
+      - POSTGRES_PASSWORD=postgres
+    restart: unless-stopped
