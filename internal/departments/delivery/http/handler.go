@@ -69,7 +69,16 @@ func (u DepartmentHandler) GetDepartment() fiber.Handler {
 		if err != nil {
 			return err
 		}
-
+		params.LimitSubjects, err = strconv.ParseInt(ctx.Query("limit_subjects", "20"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.OffsetSubjects, err = strconv.ParseInt(ctx.Query("offset_subjects", "0"),
+			10, 64)
+		if err != nil {
+			return err
+		}
 		data, err := u.departmentUC.GetDepartment(&params)
 		if err != nil {
 			return err
@@ -89,6 +98,16 @@ func (u DepartmentHandler) GetDepartments() fiber.Handler {
 			return err
 		}
 		params.Offset, err = strconv.ParseInt(ctx.Query("offset", "0"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.LimitSubjects, err = strconv.ParseInt(ctx.Query("limit_subjects", "20"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.OffsetSubjects, err = strconv.ParseInt(ctx.Query("offset_subjects", "0"),
 			10, 64)
 		if err != nil {
 			return err

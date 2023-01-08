@@ -4,28 +4,34 @@ import "github.com/rinatkh/artstudio_back/internal/subjects/models/dto"
 
 // Department Only for Responses
 type Department struct {
-	Id          int64         `json:"id"`
-	Name        string        `json:"name"`
-	Description string        `json:"description,omitempty"`
-	Image       string        `json:"image"`
-	Subject     []dto.Subject `json:"subjects"`
+	Id             int64         `json:"id"`
+	Name           string        `json:"name"`
+	Description    string        `json:"description,omitempty"`
+	Image          string        `json:"image"`
+	Subject        []dto.Subject `json:"subjects"`
+	LengthSubjects int64         `json:"length_subjects"`
 }
 
 type BasicResponse struct{}
 
 type GetDepartmentRequest struct {
-	Id int64 `path:"department_id"`
+	Id             int64 `path:"department_id"`
+	LimitSubjects  int64 `query:"limit_subjects"`
+	OffsetSubjects int64 `query:"offset_subjects"`
 }
 
 type GetDepartmentsRequest struct {
-	Limit  int64 `query:"limit"`
-	Offset int64 `query:"offset"`
+	Limit          int64 `query:"limit"`
+	Offset         int64 `query:"offset"`
+	LimitSubjects  int64 `query:"limit_subjects"`
+	OffsetSubjects int64 `query:"offset_subjects"`
 }
 
 type CreateDepartmentRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
-	Image       string `json:"image"`
+	Name        string  `json:"name"`
+	Description string  `json:"description,omitempty"`
+	Image       string  `json:"image"`
+	SubjectIDs  []int64 `json:"subjects_ids,omitempty"`
 }
 
 type UpdateDepartmentRequest struct {

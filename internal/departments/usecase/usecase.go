@@ -2,26 +2,45 @@ package usecase
 
 import (
 	"github.com/rinatkh/artstudio_back/config"
+	departmentSubjects "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects"
 	"github.com/rinatkh/artstudio_back/internal/departments"
 	"github.com/rinatkh/artstudio_back/internal/departments/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/departments/models/core"
 	"github.com/rinatkh/artstudio_back/internal/departments/models/dto"
+	"github.com/rinatkh/artstudio_back/internal/subjects"
+	dtoSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/dto"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
 )
 
 type DepartmentUseCase struct {
-	cfg            *config.Config
-	log            *logrus.Entry
-	repoDepartment departments.DepartmentRepository
+	cfg                  *config.Config
+	log                  *logrus.Entry
+	repoDepartment       departments.DepartmentRepository
+	subjectUC            subjects.UseCase
+	departmentSubjectsUC departmentSubjects.UseCase
 }
 
-func NewDepartmentUC(cfg *config.Config, log *logrus.Entry, repoDepartment departments.DepartmentRepository) departments.UseCase {
+func NewDepartmentUC(cfg *config.Config, log *logrus.Entry, repoDepartment departments.DepartmentRepository, subjectUC subjects.UseCase, departmentSubjectsUC departmentSubjects.UseCase) departments.UseCase {
 	return &DepartmentUseCase{
-		cfg:            cfg,
-		log:            log,
-		repoDepartment: repoDepartment,
+		cfg:                  cfg,
+		log:                  log,
+		repoDepartment:       repoDepartment,
+		subjectUC:            subjectUC,
+		departmentSubjectsUC: departmentSubjectsUC,
 	}
+}
+
+func (u DepartmentUseCase) getSubjects(subjectIDs *[]departmentSubjects.DepartmentSubjects) (*[]dtoSubject.Subject, error) {
+	var elems []dtoSubject.Subject
+	for _, i := range *subjectIDs {
+		subject, err := u.subjectUC.GetSubject(&dtoSubject.GetSubjectRequest{Id: i.SubjectId})
+		if err != nil {
+			return nil, err
+		}
+		elems = append(elems, subject.Subject)
+	}
+	return &elems, nil
 }
 
 func (u DepartmentUseCase) CreateDepartment(params *dto.CreateDepartmentRequest) (*dto.CreateDepartmentResponse, error) {
@@ -34,8 +53,24 @@ func (u DepartmentUseCase) CreateDepartment(params *dto.CreateDepartmentRequest)
 	if err != nil {
 		return nil, err
 	}
-
-	return &dto.CreateDepartmentResponse{Department: convert.Department2DTO(result)}, nil
+	var elems []dtoSubject.Subject
+	for _, i := range params.SubjectIDs {
+		subject, err := u.subjectUC.GetSubject(&dtoSubject.GetSubjectRequest{
+			Id: i,
+		})
+		if err != nil {
+			return nil, constants.ErrSubjectDBNotFound
+		}
+		_, err = u.departmentSubjectsUC.AddDepartmentSubjects(&departmentSubjects.AddDepartmentSubjectsRequest{
+			DepartmentId: result.Id,
+			SubjectId:    i,
+		})
+		if err != nil {
+			return nil, err
+		}
+		elems = append(elems, subject.Subject)
+	}
+	return &dto.CreateDepartmentResponse{Department: convert.Department2DTO(result, &elems, int64(len(elems)))}, nil
 }
 
 func (u DepartmentUseCase) UpdateDepartment(params *dto.UpdateDepartmentRequest) (*dto.UpdateDepartmentResponse, error) {
@@ -47,6 +82,7 @@ func (u DepartmentUseCase) UpdateDepartment(params *dto.UpdateDepartmentRequest)
 		return nil, constants.ErrDepartmentDBNotFound
 	}
 	department := core.Department{
+		Id:          params.Id,
 		Name:        params.Name,
 		Description: &params.Description,
 		Image:       params.Image,
@@ -55,8 +91,16 @@ func (u DepartmentUseCase) UpdateDepartment(params *dto.UpdateDepartmentRequest)
 	if err != nil {
 		return nil, err
 	}
-
-	return &dto.UpdateDepartmentResponse{Department: convert.Department2DTO(result)}, nil
+	elems, err := u.departmentSubjectsUC.GetDepartmentSubjects(&departmentSubjects.GetDepartmentSubjectsRequest{
+		DepartmentId: result.Id,
+		Limit:        0,
+		Offset:       0,
+	})
+	list, err := u.getSubjects(elems.DepartmentSubjects)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.UpdateDepartmentResponse{Department: convert.Department2DTO(result, list, elems.Length)}, nil
 }
 
 func (u DepartmentUseCase) DeleteDepartment(params *dto.DeleteDepartmentRequest) (*dto.DeleteDepartmentResponse, error) {
@@ -71,6 +115,10 @@ func (u DepartmentUseCase) DeleteDepartment(params *dto.DeleteDepartmentRequest)
 	if err != nil {
 		return nil, err
 	}
+	_, err = u.departmentSubjectsUC.DeleteAll(&departmentSubjects.DeleteAllRequest{DepartmentId: params.Id})
+	if err != nil {
+		return nil, err
+	}
 	return &dto.DeleteDepartmentResponse{}, nil
 }
 
@@ -82,7 +130,16 @@ func (u DepartmentUseCase) GetDepartment(params *dto.GetDepartmentRequest) (*dto
 	if result == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
-	return &dto.GetDepartmentResponse{Department: convert.Department2DTO(result)}, nil
+	elems, err := u.departmentSubjectsUC.GetDepartmentSubjects(&departmentSubjects.GetDepartmentSubjectsRequest{
+		DepartmentId: result.Id,
+		Limit:        params.LimitSubjects,
+		Offset:       params.OffsetSubjects,
+	})
+	list, err := u.getSubjects(elems.DepartmentSubjects)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.GetDepartmentResponse{Department: convert.Department2DTO(result, list, elems.Length)}, nil
 }
 
 func (u DepartmentUseCase) GetDepartments(params *dto.GetDepartmentsRequest) (*dto.GetDepartmentsResponse, error) {
@@ -95,7 +152,16 @@ func (u DepartmentUseCase) GetDepartments(params *dto.GetDepartmentsRequest) (*d
 	}
 	var result []dto.Department
 	for _, i := range *list {
-		result = append(result, convert.Department2DTO(&i))
+		elems, err := u.departmentSubjectsUC.GetDepartmentSubjects(&departmentSubjects.GetDepartmentSubjectsRequest{
+			DepartmentId: i.Id,
+			Limit:        params.LimitSubjects,
+			Offset:       params.OffsetSubjects,
+		})
+		listSubjects, err := u.getSubjects(elems.DepartmentSubjects)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, convert.Department2DTO(&i, listSubjects, elems.Length))
 	}
 	return &dto.GetDepartmentsResponse{Departments: result, Length: length}, nil
 }
