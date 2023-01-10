@@ -59,7 +59,9 @@ func (u UserHandler) GetUser() fiber.Handler {
 
 		var params dto.GetUserRequest
 		params.Id = ctx.Params("user_id")
-
+		if params.Id == "me" {
+			params.Id = ctx.Get(constants.CtxKeyUserID)
+		}
 		data, err := u.userUC.GetUser(&params)
 		if err != nil {
 			return err
