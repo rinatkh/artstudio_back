@@ -22,7 +22,6 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) departmentSubjects.De
 func (p postgresRepository) GetDepartmentSubjects(departmentId, limit, offset int64) (*[]departmentSubjects.DepartmentSubjects, int64, error) {
 	var data []departmentSubjects.DepartmentSubjects
 	queryStr := fmt.Sprintf("SELECT * FROM DepartmentSubjects WHERE department_id='%d'", departmentId)
-	queryStr += " ORDER BY created_at DESC"
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {

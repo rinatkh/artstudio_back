@@ -27,7 +27,7 @@ type GetDepartmentSubjectsRequest struct {
 	Offset       int64
 }
 type GetDepartmentSubjectsResponse struct {
-	DepartmentSubjects *[]DepartmentSubjects
+	DepartmentSubjects []DepartmentSubjects
 	Length             int64
 }
 

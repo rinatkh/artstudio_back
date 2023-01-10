@@ -4,7 +4,6 @@ import (
 	"github.com/rinatkh/artstudio_back/config"
 	"github.com/rinatkh/artstudio_back/internal/DepartmentSubjects"
 	"github.com/rinatkh/artstudio_back/internal/departments"
-	dtoDepartment "github.com/rinatkh/artstudio_back/internal/departments/models/dto"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	dtoSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/dto"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
@@ -16,16 +15,16 @@ type DepartmentSubjectsUseCase struct {
 	log                    *logrus.Entry
 	repoDepartmentSubjects departmentSubjects.DepartmentSubjectsRepository
 	subjectsUC             subjects.UseCase
-	departmentsUC          departments.UseCase
+	repoDepartment         departments.DepartmentRepository
 }
 
-func NewDepartmentSubjectsUC(cfg *config.Config, log *logrus.Entry, repoDepartmentSubjects departmentSubjects.DepartmentSubjectsRepository, subjectsUC subjects.UseCase, departmentsUC departments.UseCase) departmentSubjects.UseCase {
+func NewDepartmentSubjectsUC(cfg *config.Config, log *logrus.Entry, repoDepartmentSubjects departmentSubjects.DepartmentSubjectsRepository, subjectsUC subjects.UseCase, repoDepartment departments.DepartmentRepository) departmentSubjects.UseCase {
 	return &DepartmentSubjectsUseCase{
 		cfg:                    cfg,
 		log:                    log,
 		repoDepartmentSubjects: repoDepartmentSubjects,
 		subjectsUC:             subjectsUC,
-		departmentsUC:          departmentsUC,
+		repoDepartment:         repoDepartment,
 	}
 }
 
@@ -36,10 +35,11 @@ func (u DepartmentSubjectsUseCase) AddDepartmentSubjects(params *departmentSubje
 	if err != nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	_, err = u.departmentsUC.GetDepartment(&dtoDepartment.GetDepartmentRequest{
-		Id: params.DepartmentId,
-	})
+	dep, err := u.repoDepartment.GetDepartmentById(params.DepartmentId)
 	if err != nil {
+		return nil, constants.ErrDepartmentDBNotFound
+	}
+	if dep == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
 	return &departmentSubjects.AddDepartmentSubjectsResponse{}, u.repoDepartmentSubjects.AddDepartmentSubjects(params.DepartmentId, params.SubjectId)
@@ -51,10 +51,11 @@ func (u DepartmentSubjectsUseCase) DeleteDepartmentSubjects(params *departmentSu
 	if err != nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	_, err = u.departmentsUC.GetDepartment(&dtoDepartment.GetDepartmentRequest{
-		Id: params.DepartmentId,
-	})
+	dep, err := u.repoDepartment.GetDepartmentById(params.DepartmentId)
 	if err != nil {
+		return nil, constants.ErrDepartmentDBNotFound
+	}
+	if dep == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
 	return &departmentSubjects.DeleteDepartmentSubjectsResponse{}, u.repoDepartmentSubjects.AddDepartmentSubjects(params.DepartmentId, params.SubjectId)
@@ -64,8 +65,11 @@ func (u DepartmentSubjectsUseCase) GetDepartmentSubjects(params *departmentSubje
 	if err != nil {
 		return nil, err
 	}
+	if res == nil {
+		return &departmentSubjects.GetDepartmentSubjectsResponse{}, nil
+	}
 	return &departmentSubjects.GetDepartmentSubjectsResponse{
-		DepartmentSubjects: res,
+		DepartmentSubjects: *res,
 		Length:             length,
 	}, nil
 }

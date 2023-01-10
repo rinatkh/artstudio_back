@@ -28,6 +28,7 @@ type GetDepartmentsRequest struct {
 }
 
 type CreateDepartmentRequest struct {
+	UserId      string  `header:"User-Id"`
 	Name        string  `json:"name"`
 	Description string  `json:"description,omitempty"`
 	Image       string  `json:"image"`
@@ -36,13 +37,15 @@ type CreateDepartmentRequest struct {
 
 type UpdateDepartmentRequest struct {
 	Id          int64  `path:"department_id"`
+	UserId      string `header:"User-Id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image"`
 }
 
 type DeleteDepartmentRequest struct {
-	Id int64 `path:"department_id"`
+	Id     int64  `path:"department_id"`
+	UserId string `header:"User-Id"`
 }
 
 type CreateDepartmentResponse struct {

@@ -5,6 +5,7 @@ import (
 	"github.com/rinatkh/artstudio_back/config"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
+	coreSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/core"
 	"github.com/rinatkh/artstudio_back/internal/users"
 	"github.com/rinatkh/artstudio_back/internal/users/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/users/models/core"
@@ -129,15 +130,18 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 	if check == nil {
 		return nil, constants.ErrUserDBNotFound
 	}
+	var list *[]coreSubject.Subject
 	if check.Role == consts.Teacher {
 		_, length, err := u.repoSubjects.GetSubjects(1, 0, check.Id)
 		if err != nil {
-			return nil, constants.NewCodedError("did not delete subjects of deleted teacher", fiber.StatusConflict)
+			return nil, constants.NewCodedError("conflict to delete subjects of teacher", fiber.StatusConflict)
 		}
-		list, _, err := u.repoSubjects.GetSubjects(length, 0, check.Id)
+		list, _, err = u.repoSubjects.GetSubjects(length, 0, check.Id)
 		if err != nil {
-			return nil, constants.NewCodedError("did not delete subjects of deleted teacher", fiber.StatusConflict)
+			return nil, constants.NewCodedError("conflict to delete subjects of teacher", fiber.StatusConflict)
 		}
+	}
+	if list != nil {
 		for _, i := range *list {
 			err := u.repoSubjects.DeleteSubject(i.Id)
 			if err != nil {

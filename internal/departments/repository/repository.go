@@ -35,7 +35,7 @@ func (p postgresRepository) GetDepartmentById(id int64) (*core.Department, error
 
 func (p postgresRepository) GetDepartments(limit, offset int64) (*[]core.Department, int64, error) {
 	var data []core.Department
-	queryStr := "SELECT * FROM departments WHERE id <> ''"
+	queryStr := "SELECT * FROM departments WHERE id > 0"
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {
@@ -61,10 +61,7 @@ func (p postgresRepository) GetDepartments(limit, offset int64) (*[]core.Departm
 }
 
 func (p postgresRepository) CreateDepartment(department *core.Department) (*core.Department, error) {
-	if *department.Description == "" {
-		*department.Description = "NULL"
-	}
-	res, err := p.db.Query("INSERT INTO departments (name, image, description) VALUES ($1, $2, $3)", department.Name, department.Image, *department.Description)
+	res, err := p.db.Query("INSERT INTO departments (name, image, description) VALUES ($1, $2, $3)", department.Name, department.Image, department.Description)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -76,12 +73,9 @@ func (p postgresRepository) CreateDepartment(department *core.Department) (*core
 }
 
 func (p postgresRepository) UpdateDepartment(department *core.Department) (*core.Department, error) {
-	var query string
-	if *department.Description == "" {
-		query = fmt.Sprintf("UPDATE departments SET name='%s', image='%s', description=NULL where id='%d'", department.Name, department.Image, department.Id)
-	} else {
-		query = fmt.Sprintf("UPDATE departments SET name='%s', image='%s', description='%s' where id='%d'", department.Name, department.Image, *department.Description, department.Id)
-	}
+
+	query := fmt.Sprintf("UPDATE departments SET name='%s', image='%s', description='%s' where id='%d'", department.Name, department.Image, department.Description, department.Id)
+
 	res, err := p.db.Query(query)
 	if res != nil {
 		_ = res.Close()
@@ -103,7 +97,7 @@ func (p postgresRepository) DeleteDepartment(id int64) error {
 
 func (p postgresRepository) getDepartment(department *core.Department) (*core.Department, error) {
 	var data []core.Department
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM department WHERE name='%s' AND image='%s' and description='%s'", department.Name, department.Image, *department.Description))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM departments WHERE name='%s' AND image='%s' and description='%s'", department.Name, department.Image, department.Description))
 	if err != nil {
 		return nil, err
 	}

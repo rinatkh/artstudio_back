@@ -14,8 +14,8 @@ func Department2DTO(department *core.Department, subject *[]dtoSubject.Subject, 
 		Subject:        *subject,
 		LengthSubjects: length,
 	}
-	if department.Description != nil {
-		result.Description = *department.Description
+	if department.Description != "" {
+		result.Description = department.Description
 	}
 	return result
 }

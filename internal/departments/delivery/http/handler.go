@@ -31,6 +31,7 @@ func (u DepartmentHandler) DeleteDepartment() fiber.Handler {
 		if err != nil {
 			return err
 		}
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		data, err := u.departmentUC.DeleteDepartment(&params)
 		if err != nil {
 			return err
@@ -44,6 +45,7 @@ func (u DepartmentHandler) UpdateDepartment() fiber.Handler {
 
 		var params dto.UpdateDepartmentRequest
 		var err error
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		params.Id, err = strconv.ParseInt(ctx.Params("department_id"), 10, 64)
 		if err != nil {
 			return err
@@ -124,6 +126,7 @@ func (u DepartmentHandler) CreateDepartment() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		var params dto.CreateDepartmentRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}
