@@ -1,8 +1,10 @@
 package usecase
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
+	"github.com/rinatkh/artstudio_back/internal/subjects"
 	"github.com/rinatkh/artstudio_back/internal/users"
 	"github.com/rinatkh/artstudio_back/internal/users/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/users/models/core"
@@ -13,16 +15,18 @@ import (
 )
 
 type UserUseCase struct {
-	cfg      *config.Config
-	log      *logrus.Entry
-	repoUser users.UserRepository
+	cfg          *config.Config
+	log          *logrus.Entry
+	repoUser     users.UserRepository
+	repoSubjects subjects.SubjectRepository
 }
 
-func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository) users.UseCase {
+func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository, repoSubjects subjects.SubjectRepository) users.UseCase {
 	return &UserUseCase{
-		cfg:      cfg,
-		log:      log,
-		repoUser: repoUser,
+		cfg:          cfg,
+		log:          log,
+		repoUser:     repoUser,
+		repoSubjects: repoSubjects,
 	}
 }
 func (u UserUseCase) getRole(role string) string {
@@ -72,6 +76,9 @@ func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserR
 	if err != nil {
 		return nil, err
 	}
+	if author == nil {
+		return nil, constants.ErrNoPrivileges
+	}
 	if author.Role != consts.Admin && params.UserId != params.Id {
 		return nil, constants.ErrNoPrivileges
 	}
@@ -109,6 +116,9 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 	if err != nil {
 		return nil, err
 	}
+	if author == nil {
+		return nil, constants.ErrNoPrivileges
+	}
 	if author.Role != consts.Admin && params.UserId != params.Id {
 		return nil, constants.ErrNoPrivileges
 	}
@@ -118,6 +128,22 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 	}
 	if check == nil {
 		return nil, constants.ErrUserDBNotFound
+	}
+	if check.Role == consts.Teacher {
+		_, length, err := u.repoSubjects.GetSubjects(1, 0, check.Id)
+		if err != nil {
+			return nil, constants.NewCodedError("did not delete subjects of deleted teacher", fiber.StatusConflict)
+		}
+		list, _, err := u.repoSubjects.GetSubjects(length, 0, check.Id)
+		if err != nil {
+			return nil, constants.NewCodedError("did not delete subjects of deleted teacher", fiber.StatusConflict)
+		}
+		for _, i := range *list {
+			err := u.repoSubjects.DeleteSubject(i.Id)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	err = u.repoUser.DeleteUser(params.Id)
 	if err != nil {

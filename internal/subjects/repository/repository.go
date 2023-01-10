@@ -57,7 +57,11 @@ func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (
 		return nil, 0, nil
 	}
 	var length []int64
-	err = p.db.Select(&length, "SELECT count(*) FROM subjects")
+	q := "SELECT count(*) FROM subjects"
+	if teacherId != "" {
+		q += fmt.Sprintf(" WHERE teacher_id='%s'", teacherId)
+	}
+	err = p.db.Select(&length, q)
 	if err != nil {
 		return nil, 0, err
 	}

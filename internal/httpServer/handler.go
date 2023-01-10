@@ -28,7 +28,7 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	userRepo := usersRepository.NewPostgresRepository(postgreConnection, s.log)
 	subjectRepo := subjectRepository.NewPostgresRepository(postgreConnection, s.log)
 
-	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo)
+	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo)
 	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
 
 	userHandler := userHTTP.NewUserHandler(userUC, s.log)

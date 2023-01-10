@@ -35,6 +35,9 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, constants.ErrUserDBNotFound
+	}
 	subject := core.Subject{
 		Name:        params.Name,
 		Description: params.Description,
@@ -45,6 +48,9 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
+		}
+		if teacher == nil {
+			return nil, constants.ErrUserDBNotFound
 		}
 		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
 			return nil, constants.ErrNoPrivileges
@@ -81,6 +87,9 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, constants.ErrUserDBNotFound
+	}
 	subject := core.Subject{
 		Id:          params.Id,
 		Name:        params.Name,
@@ -92,6 +101,9 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
+		}
+		if teacher == nil {
+			return nil, constants.ErrUserDBNotFound
 		}
 		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
 			return nil, constants.ErrNoPrivileges
@@ -129,6 +141,9 @@ func (u SubjectUseCase) DeleteSubject(params *dtoSubject.DeleteSubjectRequest) (
 	if err != nil {
 		return nil, err
 	}
+	if teacher == nil {
+		return nil, constants.ErrUserDBNotFound
+	}
 	if teacher.Role != consts.Admin && teacher.Role != consts.Teacher {
 		return nil, constants.ErrNoPrivileges
 	}
@@ -154,6 +169,9 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 	if err != nil {
 		return nil, err
 	}
+	if teacher == nil {
+		return nil, constants.ErrUserDBNotFound
+	}
 	return &dtoSubject.GetSubjectResponse{Subject: convert.Subject2DTO(result, &teacher.User)}, nil
 }
 
@@ -163,6 +181,9 @@ func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dto
 		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
+		}
+		if teacher == nil {
+			return nil, constants.ErrUserDBNotFound
 		}
 		if teacher.Role == consts.Teacher {
 			teacherId = params.TeacherId
@@ -181,6 +202,9 @@ func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dto
 		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: i.TeacherId})
 		if err != nil {
 			return nil, err
+		}
+		if teacher == nil {
+			return nil, constants.ErrUserDBNotFound
 		}
 		result = append(result, convert.Subject2DTO(&i, &teacher.User))
 	}
