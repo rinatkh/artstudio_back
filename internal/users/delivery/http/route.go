@@ -6,7 +6,7 @@ import (
 )
 
 func MapUserRoutes(router fiber.Router, h *UserHandler, mw *middleware.MDWManager) {
-	router.Get("/users/:user_id", mw.VerifyTokenMiddleware(), h.GetUser())
+	router.Get("/users/:user_id", h.GetUser())
 	router.Put("/users/:user_id", h.UpdateUser())
 	router.Delete("/users/:user_id", h.DeleteUser())
 	router.Get("/users", h.GetUsers())

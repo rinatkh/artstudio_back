@@ -31,6 +31,7 @@ func (u SubjectHandler) DeleteSubject() fiber.Handler {
 		if err != nil {
 			return err
 		}
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		data, err := u.subjectUC.DeleteSubject(&params)
 		if err != nil {
 			return err
@@ -48,6 +49,7 @@ func (u SubjectHandler) UpdateSubject() fiber.Handler {
 		if err != nil {
 			return err
 		}
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}
@@ -92,6 +94,7 @@ func (u SubjectHandler) GetSubjects() fiber.Handler {
 		if err != nil {
 			return err
 		}
+		params.TeacherId = ctx.Get(constants.CtxKeyUserID)
 		data, err := u.subjectUC.GetSubjects(&params)
 		if err != nil {
 			return err
@@ -104,6 +107,7 @@ func (u SubjectHandler) CreateSubject() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		var params dto.CreateSubjectRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}

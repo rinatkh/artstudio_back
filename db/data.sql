@@ -6,35 +6,10 @@ create table public.users
     middlename text,
     sex        character(1)             not null,
     birth_date timestamp with time zone not null,
-    fio        text,
     role       text                     not null,
     image      text                     not null,
     created_at timestamp with time zone not null default now()
 );
-
-CREATE
-    OR REPLACE FUNCTION fill_fio() RETURNS TRIGGER AS
-$$
-declare
-    t text;
-BEGIN
-    t = (SELECT CASE NEW.middlename IS NOT NULL
-                    WHEN true THEN concat(' ', NEW.middlename)
-                    WHEN false THEN ''
-                    END
-         from Users);
-    UPDATE Users
-    SET fio = concat(NEW.firstname, ' ', NEW.surname, t)
-    WHERE uuid = NEW.uuid;
-    RETURN NEW;
-END;
-$$
-    LANGUAGE plpgsql;
-
-CREATE TRIGGER fill_fio
-    AFTER INSERT
-    ON public.users
-    FOR EACH ROW EXECUTE PROCEDURE fill_fio();
 
 alter table users
     owner to postgres;

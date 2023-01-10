@@ -27,6 +27,7 @@ func (u UserHandler) DeleteUser() fiber.Handler {
 
 		var params dto.DeleteUserRequest
 		params.Id = ctx.Params("user_id")
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		data, err := u.userUC.DeleteUser(&params)
 		if err != nil {
 			return err
@@ -40,6 +41,7 @@ func (u UserHandler) UpdateUser() fiber.Handler {
 
 		var params dto.UpdateUserRequest
 		params.Id = ctx.Params("user_id")
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}

@@ -33,9 +33,13 @@ func (p postgresRepository) GetSubjectById(id int64) (*core.Subject, error) {
 	return &data[0], nil
 }
 
-func (p postgresRepository) GetSubjects(limit, offset int64) (*[]core.Subject, int64, error) {
+func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (*[]core.Subject, int64, error) {
 	var data []core.Subject
-	queryStr := "SELECT * FROM subjects WHERE id <> ''"
+	queryStr := "SELECT * FROM subjects WHERE id > 0"
+
+	if teacherId != "" {
+		queryStr += fmt.Sprintf(" AND teacher_id='%s'", teacherId)
+	}
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {
@@ -61,10 +65,7 @@ func (p postgresRepository) GetSubjects(limit, offset int64) (*[]core.Subject, i
 }
 
 func (p postgresRepository) CreateSubject(subject *core.Subject) (*core.Subject, error) {
-	if *subject.Description == "" {
-		*subject.Description = "NULL"
-	}
-	res, err := p.db.Query("INSERT INTO subjects (name, image, description, teacher_id) VALUES ($1, $2, $3, $4)", subject.Name, subject.Image, *subject.Description, subject.TeacherId)
+	res, err := p.db.Query("INSERT INTO subjects (name, image, description, teacher_id) VALUES ($1, $2, $3, $4)", subject.Name, subject.Image, subject.Description, subject.TeacherId)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -76,12 +77,7 @@ func (p postgresRepository) CreateSubject(subject *core.Subject) (*core.Subject,
 }
 
 func (p postgresRepository) UpdateSubject(subject *core.Subject) (*core.Subject, error) {
-	var query string
-	if *subject.Description == "" {
-		query = fmt.Sprintf("UPDATE subjects SET name='%s', image='%s', description=NULL, teacher_id='%s' where id='%d'", subject.Name, subject.Image, subject.TeacherId, subject.Id)
-	} else {
-		query = fmt.Sprintf("UPDATE subjects SET name='%s', image='%s', description='%s', teacher_id='%s' where id='%d'", subject.Name, subject.Image, *subject.Description, subject.TeacherId, subject.Id)
-	}
+	query := fmt.Sprintf("UPDATE subjects SET name='%s', image='%s', description='%s', teacher_id='%s' where id='%d'", subject.Name, subject.Image, subject.Description, subject.TeacherId, subject.Id)
 	res, err := p.db.Query(query)
 	if res != nil {
 		_ = res.Close()
@@ -103,7 +99,7 @@ func (p postgresRepository) DeleteSubject(id int64) error {
 
 func (p postgresRepository) getSubject(subject *core.Subject) (*core.Subject, error) {
 	var data []core.Subject
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM subjects WHERE name='%s' AND image='%s' and description='%s' and teacher_id='%s'", subject.Name, subject.Image, *subject.Description, subject.TeacherId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM subjects WHERE name='%s' AND image='%s' and description='%s' and teacher_id='%s'", subject.Name, subject.Image, subject.Description, subject.TeacherId))
 	if err != nil {
 		return nil, err
 	}

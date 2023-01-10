@@ -35,6 +35,16 @@ func (u UserUseCase) getRole(role string) string {
 	return consts.Student
 }
 
+func (u UserUseCase) getSex(sex string) string {
+	switch sex {
+	case "m":
+		return consts.MAN
+	case "w":
+		return consts.WOMAN
+	}
+	return consts.NOTHING
+}
+
 func (u UserUseCase) CreateUser(params *dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
 	date, err := time.Parse("2006-01-02", params.BirthDate)
 	if err != nil {
@@ -43,8 +53,8 @@ func (u UserUseCase) CreateUser(params *dto.CreateUserRequest) (*dto.CreateUserR
 	user := core.User{
 		Firstname:  params.Firstname,
 		Surname:    params.Surname,
-		Middlename: &params.Middlename,
-		Sex:        params.Sex,
+		Middlename: params.Middlename,
+		Sex:        u.getSex(params.Sex),
 		BirthDate:  date,
 		Role:       u.getRole(params.Role),
 		Image:      params.Image,
@@ -58,6 +68,13 @@ func (u UserUseCase) CreateUser(params *dto.CreateUserRequest) (*dto.CreateUserR
 }
 
 func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserResponse, error) {
+	author, err := u.repoUser.GetUserById(params.UserId)
+	if err != nil {
+		return nil, err
+	}
+	if author.Role != consts.Admin && params.UserId != params.Id {
+		return nil, constants.ErrNoPrivileges
+	}
 	check, err := u.repoUser.GetUserById(params.Id)
 	if err != nil {
 		return nil, err
@@ -73,8 +90,8 @@ func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserR
 		Id:         params.Id,
 		Firstname:  params.Firstname,
 		Surname:    params.Surname,
-		Middlename: &params.Middlename,
-		Sex:        params.Sex,
+		Middlename: params.Middlename,
+		Sex:        u.getSex(params.Sex),
 		BirthDate:  date,
 		Role:       u.getRole(params.Role),
 		Image:      params.Image,
@@ -88,6 +105,13 @@ func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserR
 }
 
 func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserResponse, error) {
+	author, err := u.repoUser.GetUserById(params.UserId)
+	if err != nil {
+		return nil, err
+	}
+	if author.Role != consts.Admin && params.UserId != params.Id {
+		return nil, constants.ErrNoPrivileges
+	}
 	check, err := u.repoUser.GetUserById(params.Id)
 	if err != nil {
 		return nil, err

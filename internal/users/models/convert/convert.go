@@ -17,8 +17,8 @@ func User2DTO(user *core.User) dto.User {
 		Image:     user.Image,
 		Role:      user.Role,
 	}
-	if user.Middlename != nil {
-		result.Middlename = *user.Middlename
+	if user.Middlename != "" {
+		result.Middlename = user.Middlename
 	}
 	return result
 }

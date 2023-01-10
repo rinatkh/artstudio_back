@@ -35,6 +35,7 @@ type CreateUserRequest struct {
 
 type UpdateUserRequest struct {
 	Id         string `path:"user_id"`
+	UserId     string `header:"User-Id"`
 	Firstname  string `json:"firstname"`
 	Surname    string `json:"surname"`
 	Middlename string `json:"middlename,omitempty"`
@@ -45,7 +46,8 @@ type UpdateUserRequest struct {
 }
 
 type DeleteUserRequest struct {
-	Id string `path:"user_id"`
+	Id     string `path:"user_id"`
+	UserId string `header:"User-Id"`
 }
 
 type CreateUserResponse struct {

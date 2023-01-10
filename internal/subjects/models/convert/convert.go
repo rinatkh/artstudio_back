@@ -13,8 +13,8 @@ func Subject2DTO(subject *core.Subject, teacher *dtoUser.User) dtoSubject.Subjec
 		Image:   subject.Image,
 		Teacher: *teacher,
 	}
-	if subject.Description != nil {
-		result.Description = *subject.Description
+	if subject.Description != "" {
+		result.Description = subject.Description
 	}
 	return result
 }

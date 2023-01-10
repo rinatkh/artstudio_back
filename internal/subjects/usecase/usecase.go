@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
+	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	"github.com/rinatkh/artstudio_back/internal/subjects/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/subjects/models/core"
@@ -16,7 +18,7 @@ type SubjectUseCase struct {
 	cfg         *config.Config
 	log         *logrus.Entry
 	repoSubject subjects.SubjectRepository
-	userUS      users.UseCase
+	userUС      users.UseCase
 }
 
 func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.SubjectRepository, userUS users.UseCase) subjects.UseCase {
@@ -24,27 +26,47 @@ func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.Su
 		cfg:         cfg,
 		log:         log,
 		repoSubject: repoSubject,
-		userUS:      userUS,
+		userUС:      userUS,
 	}
 }
 
 func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (*dtoSubject.CreateSubjectResponse, error) {
-	teacher, err := u.userUS.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+	user, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
 	if err != nil {
 		return nil, err
 	}
 	subject := core.Subject{
 		Name:        params.Name,
-		Description: &params.Description,
+		Description: params.Description,
 		Image:       params.Image,
-		TeacherId:   teacher.Id,
+	}
+	var tutor dtoUser.User
+	if params.TeacherId != "" {
+		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		if err != nil {
+			return nil, err
+		}
+		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
+			return nil, constants.ErrNoPrivileges
+		}
+		subject.TeacherId = params.TeacherId
+		tutor = teacher.User
+	} else {
+		if user.Role == consts.Admin {
+			return nil, constants.NewCodedError("teacher_id is empty", fiber.StatusConflict)
+		}
+		if user.Role != consts.Teacher {
+			return nil, constants.ErrNoPrivileges
+		}
+		subject.TeacherId = params.UserId
+		tutor = user.User
 	}
 	result, err := u.repoSubject.CreateSubject(&subject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dtoSubject.CreateSubjectResponse{Subject: convert.Subject2DTO(result, &teacher.User)}, nil
+	return &dtoSubject.CreateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor)}, nil
 }
 
 func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (*dtoSubject.UpdateSubjectResponse, error) {
@@ -55,22 +77,44 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 	if check == nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	teacher, err := u.userUS.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+	user, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
 	if err != nil {
 		return nil, err
 	}
 	subject := core.Subject{
+		Id:          params.Id,
 		Name:        params.Name,
-		Description: &params.Description,
+		Description: params.Description,
 		Image:       params.Image,
-		TeacherId:   teacher.Id,
 	}
+	var tutor dtoUser.User
+	if params.TeacherId != "" {
+		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		if err != nil {
+			return nil, err
+		}
+		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
+			return nil, constants.ErrNoPrivileges
+		}
+		subject.TeacherId = params.TeacherId
+		tutor = teacher.User
+	} else {
+		if user.Role == consts.Admin {
+			return nil, constants.NewCodedError("teacher_id is empty", fiber.StatusConflict)
+		}
+		if user.Role != consts.Teacher || user.Id != check.TeacherId {
+			return nil, constants.ErrNoPrivileges
+		}
+		subject.TeacherId = params.UserId
+		tutor = user.User
+	}
+
 	result, err := u.repoSubject.UpdateSubject(&subject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dtoSubject.UpdateSubjectResponse{Subject: convert.Subject2DTO(result, &teacher.User)}, nil
+	return &dtoSubject.UpdateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor)}, nil
 }
 
 func (u SubjectUseCase) DeleteSubject(params *dtoSubject.DeleteSubjectRequest) (*dtoSubject.DeleteSubjectResponse, error) {
@@ -80,6 +124,16 @@ func (u SubjectUseCase) DeleteSubject(params *dtoSubject.DeleteSubjectRequest) (
 	}
 	if check == nil {
 		return nil, constants.ErrSubjectDBNotFound
+	}
+	teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
+	if err != nil {
+		return nil, err
+	}
+	if teacher.Role != consts.Admin && teacher.Role != consts.Teacher {
+		return nil, constants.ErrNoPrivileges
+	}
+	if teacher.Role == consts.Teacher && teacher.Id != check.TeacherId {
+		return nil, constants.ErrNoPrivileges
 	}
 	err = u.repoSubject.DeleteSubject(params.Id)
 	if err != nil {
@@ -96,7 +150,7 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 	if result == nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	teacher, err := u.userUS.GetUser(&dtoUser.GetUserRequest{Id: result.TeacherId})
+	teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: result.TeacherId})
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +158,18 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 }
 
 func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dtoSubject.GetSubjectsResponse, error) {
-	list, length, err := u.repoSubject.GetSubjects(params.Limit, params.Offset)
+	var teacherId string
+	if params.TeacherId != "" {
+		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		if err != nil {
+			return nil, err
+		}
+		if teacher.Role == consts.Teacher {
+			teacherId = params.TeacherId
+		}
+	}
+
+	list, length, err := u.repoSubject.GetSubjects(params.Limit, params.Offset, teacherId)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +178,7 @@ func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dto
 	}
 	var result []dtoSubject.Subject
 	for _, i := range *list {
-		teacher, err := u.userUS.GetUser(&dtoUser.GetUserRequest{Id: i.TeacherId})
+		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: i.TeacherId})
 		if err != nil {
 			return nil, err
 		}

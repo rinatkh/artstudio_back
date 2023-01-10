@@ -41,4 +41,6 @@ var (
 	ErrUnauthorized            = &CodedError{errors.New("unauthorized"), fiber.StatusUnauthorized}
 	ErrMissingAuthCookie       = &CodedError{errors.New("missing authorization cookie"), fiber.StatusUnauthorized}
 	ErrHashInvalid             = &CodedError{errors.New("hash is invalid"), fiber.StatusUnauthorized}
+
+	ErrNoPrivileges = &CodedError{errors.New("you have no privileges"), fiber.StatusForbidden}
 )

@@ -12,6 +12,10 @@ import (
 	userHTTP "github.com/rinatkh/artstudio_back/internal/users/delivery/http"
 	usersRepository "github.com/rinatkh/artstudio_back/internal/users/repository"
 	usersUsecase "github.com/rinatkh/artstudio_back/internal/users/usecase"
+
+	subjectHTTP "github.com/rinatkh/artstudio_back/internal/subjects/delivery/http"
+	subjectRepository "github.com/rinatkh/artstudio_back/internal/subjects/repository"
+	subjectUsecase "github.com/rinatkh/artstudio_back/internal/subjects/usecase"
 )
 
 func (s *Server) MapHandlers(app *fiber.App) error {
@@ -22,10 +26,13 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	}
 
 	userRepo := usersRepository.NewPostgresRepository(postgreConnection, s.log)
+	subjectRepo := subjectRepository.NewPostgresRepository(postgreConnection, s.log)
 
 	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo)
+	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
 
 	userHandler := userHTTP.NewUserHandler(userUC, s.log)
+	subjectHandler := subjectHTTP.NewSubjectHandler(subjectUC, s.log)
 
 	app.Use(serverLogger.New())
 	if _, ok := os.LookupEnv("LOCAL"); !ok {
@@ -40,6 +47,7 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	mw := middleware.NewMDWManager(s.cfg)
 
 	userHTTP.MapUserRoutes(app, userHandler, mw)
+	subjectHTTP.MapSubjectRoutes(app, subjectHandler, mw)
 
 	return nil
 }

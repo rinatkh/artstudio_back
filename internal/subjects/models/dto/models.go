@@ -18,27 +18,31 @@ type GetSubjectRequest struct {
 }
 
 type GetSubjectsRequest struct {
-	Limit  int64 `query:"limit"`
-	Offset int64 `query:"offset"`
+	TeacherId string `header:"User-Id"`
+	Limit     int64  `query:"limit"`
+	Offset    int64  `query:"offset"`
 }
 
 type CreateSubjectRequest struct {
+	UserId      string `header:"User-Id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image"`
-	TeacherId   string `json:"teacher_id"`
+	TeacherId   string `json:"teacher_id,omitempty"`
 }
 
 type UpdateSubjectRequest struct {
 	Id          int64  `path:"subject_id"`
+	UserId      string `header:"User-Id"`
 	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image"`
-	TeacherId   string `json:"teacher_id"`
+	TeacherId   string `json:"teacher_id,omitempty"`
 }
 
 type DeleteSubjectRequest struct {
-	Id int64 `path:"subject_id"`
+	UserId string `header:"User-Id"`
+	Id     int64  `path:"subject_id"`
 }
 
 type CreateSubjectResponse struct {

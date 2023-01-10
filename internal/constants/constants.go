@@ -19,3 +19,9 @@ const (
 	Teacher = "TEACHER"
 	Admin   = "ADMIN"
 )
+
+const (
+	MAN     = "M"
+	WOMAN   = "W"
+	NOTHING = ""
+)
