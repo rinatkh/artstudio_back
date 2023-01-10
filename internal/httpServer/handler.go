@@ -9,6 +9,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	serverLogger "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+
+	authHTTP "github.com/rinatkh/artstudio_back/internal/auth/delivery/http"
+	authRepository "github.com/rinatkh/artstudio_back/internal/auth/repository"
+	authUsecase "github.com/rinatkh/artstudio_back/internal/auth/usecase"
+
 	userHTTP "github.com/rinatkh/artstudio_back/internal/users/delivery/http"
 	usersRepository "github.com/rinatkh/artstudio_back/internal/users/repository"
 	usersUsecase "github.com/rinatkh/artstudio_back/internal/users/usecase"
@@ -32,16 +37,19 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 		return err
 	}
 
+	authRepo := authRepository.NewPostgresRepository(postgreConnection, s.log)
 	userRepo := usersRepository.NewPostgresRepository(postgreConnection, s.log)
 	subjectRepo := subjectRepository.NewPostgresRepository(postgreConnection, s.log)
 	departmentRepo := departmentRepository.NewPostgresRepository(postgreConnection, s.log)
 	departmentSubjectsRepo := departmentSubjectsRepository.NewPostgresRepository(postgreConnection, s.log)
 
-	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo)
+	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo, authRepo)
+	authUC := authUsecase.NewAuthUC(s.cfg, s.log, authRepo, userUC)
 	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
 	departmentSubjectsUC := departmentSubjectsUsecase.NewDepartmentSubjectsUC(s.cfg, s.log, departmentSubjectsRepo, subjectUC, departmentRepo)
 	departmentUC := departmentUsecase.NewDepartmentUC(s.cfg, s.log, departmentRepo, subjectUC, departmentSubjectsUC, userUC)
 
+	authHandler := authHTTP.NewAuthHandler(authUC, s.log, s.cfg)
 	userHandler := userHTTP.NewUserHandler(userUC, s.log)
 	subjectHandler := subjectHTTP.NewSubjectHandler(subjectUC, s.log)
 	departmentHandler := departmentHTTP.NewDepartmentHandler(departmentUC, s.log)
@@ -58,6 +66,7 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 
 	mw := middleware.NewMDWManager(s.cfg)
 
+	authHTTP.MapAuthRoutes(app, authHandler)
 	userHTTP.MapUserRoutes(app, userHandler, mw)
 	subjectHTTP.MapSubjectRoutes(app, subjectHandler, mw)
 	departmentHTTP.MapDepartmentRoutes(app, departmentHandler, mw)

@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
+	"github.com/rinatkh/artstudio_back/internal/auth"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	coreSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/core"
@@ -20,14 +21,16 @@ type UserUseCase struct {
 	log          *logrus.Entry
 	repoUser     users.UserRepository
 	repoSubjects subjects.SubjectRepository
+	repoAuth     auth.AuthRepository
 }
 
-func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository, repoSubjects subjects.SubjectRepository) users.UseCase {
+func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository, repoSubjects subjects.SubjectRepository, repoAuth auth.AuthRepository) users.UseCase {
 	return &UserUseCase{
 		cfg:          cfg,
 		log:          log,
 		repoUser:     repoUser,
 		repoSubjects: repoSubjects,
+		repoAuth:     repoAuth,
 	}
 }
 func (u UserUseCase) getRole(role string) string {
@@ -148,6 +151,10 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 				return nil, err
 			}
 		}
+	}
+	err = u.repoAuth.DeleteUser(params.Id)
+	if err != nil {
+		return nil, err
 	}
 	err = u.repoUser.DeleteUser(params.Id)
 	if err != nil {

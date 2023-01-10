@@ -14,6 +14,17 @@ create table public.users
 alter table users
     owner to postgres;
 
+create table public.auth
+(
+    uuid          text             NOT NULL REFERENCES users (uuid),
+    email         text primary key not NULL,
+    password_hash text             NOT NULL,
+    password_salt text             not null
+);
+
+alter table auth
+    owner to postgres;
+
 create table public.departments
 (
     id          bigserial primary key not null,

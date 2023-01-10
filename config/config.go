@@ -11,6 +11,7 @@ type Config struct {
 	Server   ServerConfig
 	Logger   LoggerConfig
 	Postgres PostgresConfig
+	Service  ServiceConfig
 }
 
 type LoggerConfig struct {
@@ -21,6 +22,11 @@ type ServerConfig struct {
 	Host                        string
 	Port                        string
 	ShowUnknownErrorsInResponse bool
+}
+
+type ServiceConfig struct {
+	JwtTtl    int64
+	JwtSecret string
 }
 
 type PostgresConfig struct {

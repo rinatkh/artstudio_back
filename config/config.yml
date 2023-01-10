@@ -14,3 +14,7 @@ Postgres:
   DBName: 'docker'
   sslMode: 'disable'
   pgDriver: 'pgx'
+
+Service:
+  JwtTtl: 604800
+  JwtSecret: 'somesecretstringchangemeplease'

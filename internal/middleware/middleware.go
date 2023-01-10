@@ -32,13 +32,13 @@ func (mw *MDWManager) VerifyTokenMiddleware() fiber.Handler {
 			return constants.ErrMissingAuthCookie
 		}
 
-		token, err := utils.ParseAuthToken(cookie)
+		token, err := utils.ParseAuthToken(cookie, mw.cfg)
 		if err != nil {
 			return err
 		}
 
-		ctx.Set(constants.CtxKeyUserID, token.UserID)
-		return nil
+		ctx.Request().Header.Add(constants.CtxKeyUserID, token.UserID)
+		return ctx.Next()
 	}
 }
 
@@ -78,6 +78,6 @@ func (mw *MDWManager) OAuthTelegramMiddleware() fiber.Handler {
 			return constants.ErrHashInvalid
 		}
 
-		return nil
+		return ctx.Next()
 	}
 }

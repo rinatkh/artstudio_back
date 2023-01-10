@@ -3,11 +3,11 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"github.com/rinatkh/artstudio_back/config"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
-	"github.com/spf13/viper"
 )
 
 type AuthTokenWrapper struct {
@@ -16,14 +16,14 @@ type AuthTokenWrapper struct {
 	jwt.StandardClaims
 }
 
-func GenerateAuthToken(atw *AuthTokenWrapper) (string, error) {
+func GenerateAuthToken(atw *AuthTokenWrapper, cfg *config.Config) (string, error) {
 	if atw.ExpiresAt == 0 {
-		t := time.Second * time.Duration(viper.GetInt64(constants.ViperJWTTTLKey))
+		t := time.Second * time.Duration(cfg.Service.JwtTtl)
 		atw.ExpiresAt = time.Now().Add(t).Unix()
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atw)
-	authToken, err := jwtToken.SignedString([]byte(viper.GetString(constants.ViperJWTSecretKey)))
+	authToken, err := jwtToken.SignedString([]byte(cfg.Service.JwtSecret))
 	if err != nil {
 		return "", fmt.Errorf("%w: %v", constants.ErrSignToken, err)
 	}
@@ -31,11 +31,11 @@ func GenerateAuthToken(atw *AuthTokenWrapper) (string, error) {
 	return authToken, nil
 }
 
-func ParseAuthToken(authToken string) (*AuthTokenWrapper, error) {
+func ParseAuthToken(authToken string, cfg *config.Config) (*AuthTokenWrapper, error) {
 	t, err := jwt.ParseWithClaims(
 		authToken,
 		&AuthTokenWrapper{},
-		keyFunc([]byte(viper.GetString(constants.ViperJWTSecretKey))),
+		keyFunc([]byte(cfg.Service.JwtSecret)),
 	)
 
 	if ve, ok := err.(*jwt.ValidationError); ok {

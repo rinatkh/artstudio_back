@@ -42,5 +42,7 @@ var (
 	ErrMissingAuthCookie       = &CodedError{errors.New("missing authorization cookie"), fiber.StatusUnauthorized}
 	ErrHashInvalid             = &CodedError{errors.New("hash is invalid"), fiber.StatusUnauthorized}
 
-	ErrNoPrivileges = &CodedError{errors.New("you have no privileges"), fiber.StatusForbidden}
+	ErrNoPrivileges      = &CodedError{errors.New("you have no privileges"), fiber.StatusForbidden}
+	ErrEmailAlreadyTaken = &CodedError{errors.New("email is taken already by other user"), fiber.StatusConflict}
+	ErrPasswordMismatch  = &CodedError{errors.New("password mismatch"), fiber.StatusUnauthorized}
 )

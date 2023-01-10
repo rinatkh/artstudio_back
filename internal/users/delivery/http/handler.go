@@ -90,19 +90,3 @@ func (u UserHandler) GetUsers() fiber.Handler {
 		return ctx.JSON(data)
 	}
 }
-
-func (u UserHandler) CreateUser() fiber.Handler {
-	return func(ctx *fiber.Ctx) error {
-
-		var params dto.CreateUserRequest
-		if err := utils.ReadRequest(ctx, &params); err != nil {
-			return constants.InputError
-		}
-
-		data, err := u.userUC.CreateUser(&params)
-		if err != nil {
-			return err
-		}
-		return ctx.JSON(data)
-	}
-}

@@ -7,8 +7,8 @@ import (
 
 func MapDepartmentRoutes(router fiber.Router, h *DepartmentHandler, mw *middleware.MDWManager) {
 	router.Get("/departments/:department_id", h.GetDepartment())
-	router.Put("/departments/:department_id", h.UpdateDepartment())
-	router.Delete("/departments/:department_id", h.DeleteDepartment())
+	router.Put("/departments/:department_id", mw.VerifyTokenMiddleware(), h.UpdateDepartment())
+	router.Delete("/departments/:department_id", mw.VerifyTokenMiddleware(), h.DeleteDepartment())
 	router.Get("/departments", h.GetDepartments())
-	router.Post("/departments", h.CreateDepartment())
+	router.Post("/departments", mw.VerifyTokenMiddleware(), h.CreateDepartment())
 }

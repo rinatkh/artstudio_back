@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/pgx v3.6.2+incompatible
+	github.com/jackc/pgx/v5 v5.2.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.7
 	github.com/sirupsen/logrus v1.9.0
@@ -42,7 +43,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.41.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
+	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/sys v0.0.0-20220908164124-27713097b956 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
