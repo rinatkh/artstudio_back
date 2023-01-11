@@ -203,3 +203,49 @@ func (u DepartmentUseCase) GetDepartments(params *dto.GetDepartmentsRequest) (*d
 	}
 	return &dto.GetDepartmentsResponse{Departments: result, Length: length}, nil
 }
+
+func (u DepartmentUseCase) AddSubjDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error) {
+	err := u.checkAdmin(params.UserId)
+	if err != nil {
+		return nil, err
+	}
+	_, err = u.departmentSubjectsUC.AddDepartmentSubjects(&departmentSubjects.AddDepartmentSubjectsRequest{
+		DepartmentId: params.Id,
+		SubjectId:    params.SubjectId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	res, err := u.GetDepartment(&dto.GetDepartmentRequest{
+		Id:             params.Id,
+		LimitSubjects:  0,
+		OffsetSubjects: 0,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &dto.UpdateDepartmentSubjectResponse{Department: res.Department}, nil
+}
+
+func (u DepartmentUseCase) DelSubDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error) {
+	err := u.checkAdmin(params.UserId)
+	if err != nil {
+		return nil, err
+	}
+	_, err = u.departmentSubjectsUC.DeleteDepartmentSubjects(&departmentSubjects.DeleteDepartmentSubjectsRequest{
+		DepartmentId: params.Id,
+		SubjectId:    params.SubjectId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	res, err := u.GetDepartment(&dto.GetDepartmentRequest{
+		Id:             params.Id,
+		LimitSubjects:  0,
+		OffsetSubjects: 0,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &dto.UpdateDepartmentSubjectResponse{Department: res.Department}, nil
+}

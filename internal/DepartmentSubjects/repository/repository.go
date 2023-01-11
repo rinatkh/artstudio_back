@@ -46,6 +46,20 @@ func (p postgresRepository) GetDepartmentSubjects(departmentId, limit, offset in
 	return &data, length[0], nil
 }
 
+func (p postgresRepository) IsDepartmentSubjects(departmentId, subjectId int64) (bool, error) {
+	var data []bool
+	queryStr := fmt.Sprintf("select 1 from DepartmentSubjects where department_id='%d' AND subject_id='%d' limit 1", departmentId, subjectId)
+
+	err := p.db.Select(&data, queryStr)
+	if err != nil {
+		return true, err
+	}
+	if len(data) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (p postgresRepository) AddDepartmentSubjects(departmentId, subjectId int64) error {
 	query := fmt.Sprintf("INSERT INTO DepartmentSubjects (department_id, subject_id) VALUES ('%d', '%d')", departmentId, subjectId)
 

@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
 	"github.com/rinatkh/artstudio_back/internal/DepartmentSubjects"
 	"github.com/rinatkh/artstudio_back/internal/departments"
@@ -42,6 +44,13 @@ func (u DepartmentSubjectsUseCase) AddDepartmentSubjects(params *departmentSubje
 	if dep == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
+	isExist, err := u.repoDepartmentSubjects.IsDepartmentSubjects(params.DepartmentId, params.SubjectId)
+	if err != nil {
+		return nil, err
+	}
+	if isExist {
+		return nil, constants.NewCodedError(fmt.Sprintf("Departament %d already have Subject %d", params.DepartmentId, params.SubjectId), fiber.StatusConflict)
+	}
 	return &departmentSubjects.AddDepartmentSubjectsResponse{}, u.repoDepartmentSubjects.AddDepartmentSubjects(params.DepartmentId, params.SubjectId)
 }
 func (u DepartmentSubjectsUseCase) DeleteDepartmentSubjects(params *departmentSubjects.DeleteDepartmentSubjectsRequest) (*departmentSubjects.DeleteDepartmentSubjectsResponse, error) {
@@ -58,7 +67,14 @@ func (u DepartmentSubjectsUseCase) DeleteDepartmentSubjects(params *departmentSu
 	if dep == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
-	return &departmentSubjects.DeleteDepartmentSubjectsResponse{}, u.repoDepartmentSubjects.AddDepartmentSubjects(params.DepartmentId, params.SubjectId)
+	isExist, err := u.repoDepartmentSubjects.IsDepartmentSubjects(params.DepartmentId, params.SubjectId)
+	if err != nil {
+		return nil, err
+	}
+	if !isExist {
+		return nil, constants.NewCodedError(fmt.Sprintf("Departament %d already don't have Subject %d", params.DepartmentId, params.SubjectId), fiber.StatusConflict)
+	}
+	return &departmentSubjects.DeleteDepartmentSubjectsResponse{}, u.repoDepartmentSubjects.DeleteDepartmentSubjects(params.DepartmentId, params.SubjectId)
 }
 func (u DepartmentSubjectsUseCase) GetDepartmentSubjects(params *departmentSubjects.GetDepartmentSubjectsRequest) (*departmentSubjects.GetDepartmentSubjectsResponse, error) {
 	res, length, err := u.repoDepartmentSubjects.GetDepartmentSubjects(params.DepartmentId, params.Limit, params.Offset)

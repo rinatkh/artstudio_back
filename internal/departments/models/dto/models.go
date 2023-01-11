@@ -48,6 +48,12 @@ type DeleteDepartmentRequest struct {
 	UserId string `header:"User-Id"`
 }
 
+type UpdateDepartmentSubjectRequest struct {
+	Id        int64  `path:"department_id"`
+	UserId    string `header:"User-Id"`
+	SubjectId int64  `json:"subject_id"`
+}
+
 type CreateDepartmentResponse struct {
 	Department
 }
@@ -67,4 +73,8 @@ type GetDepartmentResponse struct {
 type GetDepartmentsResponse struct {
 	Departments []Department `json:"departments"`
 	Length      int64        `json:"length"`
+}
+
+type UpdateDepartmentSubjectResponse struct {
+	Department
 }

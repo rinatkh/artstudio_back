@@ -5,4 +5,5 @@ type DepartmentSubjectsRepository interface {
 	DeleteDepartmentSubjects(departmentId, subjectId int64) error
 	AddDepartmentSubjects(departmentId, subjectId int64) error
 	DeleteAll(departmentId int64) error
+	IsDepartmentSubjects(departmentId, subjectId int64) (bool, error)
 }

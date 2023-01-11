@@ -8,4 +8,7 @@ type UseCase interface {
 	DeleteDepartment(params *dto.DeleteDepartmentRequest) (*dto.DeleteDepartmentResponse, error)
 	GetDepartment(params *dto.GetDepartmentRequest) (*dto.GetDepartmentResponse, error)
 	GetDepartments(params *dto.GetDepartmentsRequest) (*dto.GetDepartmentsResponse, error)
+
+	AddSubjDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error)
+	DelSubDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error)
 }

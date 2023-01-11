@@ -62,6 +62,50 @@ func (u DepartmentHandler) UpdateDepartment() fiber.Handler {
 	}
 }
 
+func (u DepartmentHandler) AddSubjDepartment() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+
+		var params dto.UpdateDepartmentSubjectRequest
+		var err error
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		params.Id, err = strconv.ParseInt(ctx.Params("department_id"), 10, 64)
+		if err != nil {
+			return err
+		}
+		if err := utils.ReadRequest(ctx, &params); err != nil {
+			return constants.InputError
+		}
+
+		data, err := u.departmentUC.AddSubjDepartment(&params)
+		if err != nil {
+			return err
+		}
+		return ctx.JSON(data)
+	}
+}
+
+func (u DepartmentHandler) DelSubDepartment() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+
+		var params dto.UpdateDepartmentSubjectRequest
+		var err error
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		params.Id, err = strconv.ParseInt(ctx.Params("department_id"), 10, 64)
+		if err != nil {
+			return err
+		}
+		if err := utils.ReadRequest(ctx, &params); err != nil {
+			return constants.InputError
+		}
+
+		data, err := u.departmentUC.DelSubDepartment(&params)
+		if err != nil {
+			return err
+		}
+		return ctx.JSON(data)
+	}
+}
+
 func (u DepartmentHandler) GetDepartment() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
