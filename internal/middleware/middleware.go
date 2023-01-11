@@ -11,7 +11,6 @@ import (
 	"github.com/rinatkh/artstudio_back/config"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/rinatkh/artstudio_back/pkg/utils"
-	"github.com/spf13/viper"
 )
 
 type MDWManager struct {
@@ -68,8 +67,7 @@ func (mw *MDWManager) OAuthTelegramMiddleware() fiber.Handler {
 
 		sha256hash := sha256.New()
 
-		telegramToken := viper.GetString("service.telegram_token")
-		_, _ = io.WriteString(sha256hash, telegramToken)
+		_, _ = io.WriteString(sha256hash, mw.cfg.Service.TelegramToken)
 
 		hmachash := hmac.New(sha256.New, sha256hash.Sum(nil))
 		_, _ = io.WriteString(hmachash, dataCheckString)

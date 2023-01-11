@@ -28,6 +28,12 @@ import (
 
 	departmentSubjectsRepository "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/repository"
 	departmentSubjectsUsecase "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/usecase"
+
+	oauthHTTP "github.com/rinatkh/artstudio_back/internal/oauth/delivery/http"
+	oauthUsecase "github.com/rinatkh/artstudio_back/internal/oauth/usecase"
+
+	staticHTTP "github.com/rinatkh/artstudio_back/internal/static/delivery/http"
+	staticUsecase "github.com/rinatkh/artstudio_back/internal/static/usecase"
 )
 
 func (s *Server) MapHandlers(app *fiber.App) error {
@@ -45,11 +51,15 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 
 	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo, authRepo)
 	authUC := authUsecase.NewAuthUC(s.cfg, s.log, authRepo, userUC)
+	oauthUC := oauthUsecase.NewOauthUC(s.cfg, s.log, userRepo)
+	statichUC := staticUsecase.NewStaticUC(s.cfg, s.log)
 	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
 	departmentSubjectsUC := departmentSubjectsUsecase.NewDepartmentSubjectsUC(s.cfg, s.log, departmentSubjectsRepo, subjectUC, departmentRepo)
 	departmentUC := departmentUsecase.NewDepartmentUC(s.cfg, s.log, departmentRepo, subjectUC, departmentSubjectsUC, userUC)
 
 	authHandler := authHTTP.NewAuthHandler(authUC, s.log, s.cfg)
+	oauthHandler := oauthHTTP.NewOauthHandler(oauthUC, s.log, s.cfg)
+	staticHandler := staticHTTP.NewStaticHandler(statichUC, s.log, s.cfg)
 	userHandler := userHTTP.NewUserHandler(userUC, s.log)
 	subjectHandler := subjectHTTP.NewSubjectHandler(subjectUC, s.log)
 	departmentHandler := departmentHTTP.NewDepartmentHandler(departmentUC, s.log)
@@ -67,7 +77,9 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	mw := middleware.NewMDWManager(s.cfg)
 
 	authHTTP.MapAuthRoutes(app, authHandler)
+	oauthHTTP.MapOauthRoutes(app, oauthHandler, mw)
 	userHTTP.MapUserRoutes(app, userHandler, mw)
+	staticHTTP.MaStaticRoutes(app, staticHandler, mw)
 	subjectHTTP.MapSubjectRoutes(app, subjectHandler, mw)
 	departmentHTTP.MapDepartmentRoutes(app, departmentHandler, mw)
 

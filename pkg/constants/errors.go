@@ -24,15 +24,16 @@ func NewCodedError(errMessage string, code int) *CodedError {
 
 var (
 	// Unathorized
-	InputError              = &CodedError{errors.New("bad json request"), fiber.StatusBadRequest}
-	ErrUserDBNotFound       = &CodedError{errors.New("user not found in the database"), fiber.StatusBadRequest}
-	ErrDepartmentDBNotFound = &CodedError{errors.New("department not found in the database"), fiber.StatusBadRequest}
-	ErrSubjectDBNotFound    = &CodedError{errors.New("subject not found in the database"), fiber.StatusBadRequest}
-	ErrOrderDBNotFound      = &CodedError{errors.New("order not found in the database"), fiber.StatusBadRequest}
-	AuthError               = &CodedError{errors.New("Invalid public api key"), fiber.StatusUnauthorized}
-	ErrConvertData          = &CodedError{errors.New("failed to convert"), fiber.StatusInternalServerError}
-	ErrDB                   = &CodedError{errors.New("failed working with db"), fiber.StatusInternalServerError}
-
+	InputError                 = &CodedError{errors.New("bad json request"), fiber.StatusBadRequest}
+	ErrUserDBNotFound          = &CodedError{errors.New("user not found in the database"), fiber.StatusBadRequest}
+	ErrDepartmentDBNotFound    = &CodedError{errors.New("department not found in the database"), fiber.StatusBadRequest}
+	ErrSubjectDBNotFound       = &CodedError{errors.New("subject not found in the database"), fiber.StatusBadRequest}
+	ErrTelegramDBNotFound      = &CodedError{errors.New("telegram not found in the database"), fiber.StatusBadRequest}
+	ErrOrderDBNotFound         = &CodedError{errors.New("order not found in the database"), fiber.StatusBadRequest}
+	AuthError                  = &CodedError{errors.New("Invalid public api key"), fiber.StatusUnauthorized}
+	ErrConvertData             = &CodedError{errors.New("failed to convert"), fiber.StatusInternalServerError}
+	ErrDB                      = &CodedError{errors.New("failed working with db"), fiber.StatusInternalServerError}
+	ErrGenerateUUID            = &CodedError{errors.New("failed to generate UUID"), fiber.StatusInternalServerError}
 	ErrSignToken               = &CodedError{errors.New("failed to sign token"), fiber.StatusInternalServerError}
 	ErrParseAuthToken          = &CodedError{errors.New("failed to parse authorization token"), fiber.StatusInternalServerError}
 	ErrAuthTokenExpired        = &CodedError{errors.New("authorization token is expired"), fiber.StatusForbidden}

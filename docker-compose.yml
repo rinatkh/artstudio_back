@@ -9,8 +9,12 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     container_name: service
+    volumes:
+      - ./var/www/images:/opt/pics:rw
+      - ./var/www/files:/opt/files:rw
     depends_on:
       - postgres
+      - webp
 
   postgres:
     image: postgres:latest
@@ -25,3 +29,12 @@ services:
       - POSTGRES_DB=docker
       - POSTGRES_PASSWORD=postgres
     restart: unless-stopped
+
+  webp:
+    image: webpsh/webp-server-go
+    restart: unless-stopped
+    volumes:
+      - ./var/www/images:/opt/pics:rw
+      - ./var/www/cache:/opt/exhaust:rw
+    ports:
+      - "3333:3333"

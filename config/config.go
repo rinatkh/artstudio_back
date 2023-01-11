@@ -25,8 +25,9 @@ type ServerConfig struct {
 }
 
 type ServiceConfig struct {
-	JwtTtl    int64
-	JwtSecret string
+	JwtTtl        int64
+	JwtSecret     string
+	TelegramToken string
 }
 
 type PostgresConfig struct {

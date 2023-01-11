@@ -18,3 +18,4 @@ Postgres:
 Service:
   JwtTtl: 604800
   JwtSecret: 'somesecretstringchangemeplease'
+  TelegramToken: ''
