@@ -1,0 +1,79 @@
+package dto
+
+import (
+	"github.com/rinatkh/artstudio_back/internal/users/models/dto"
+	"time"
+)
+
+// TimeTeacher Only for Responses
+type TimeTeacher struct {
+	Id         int64     `json:"id"`
+	StartTime  time.Time `json:"start_time"`
+	FinishTime time.Time `json:"finish_time"`
+}
+
+type AllTimeTeacher struct {
+	Teacher dto.User      `json:"teacher"`
+	Time    []TimeTeacher `json:"time"`
+}
+type OneTimeTeacher struct {
+	TeacherId dto.User    `json:"teacher_id"`
+	Time      TimeTeacher `json:"time"`
+}
+
+type BasicResponse struct{}
+
+type GetTimeTeacherRequest struct {
+	UserId string `header:"User-Id"`
+	Id     int64  `path:"time_teacher_id"`
+}
+
+type GetTimeTeacherResponse struct {
+	OneTimeTeacher
+}
+
+type GetTimeTeachersRequest struct {
+	UserId     string `header:"User-Id"`
+	TeacherId  string `query:"teacher_id"`
+	StartTime  string `query:"start_time"`
+	FinishTime string `query:"finish_time"`
+}
+
+type GetTimeTeachersResponse struct {
+	AllTimeTeacher
+}
+
+type Time struct {
+	StartTime  string `json:"start_time"`
+	FinishTime string `json:"finish_time"`
+}
+
+type CreateTimeTeacherRequest struct {
+	UserId    string `header:"User-Id"`
+	Time      []Time `json:"time"`
+	TeacherId string `json:"teacher_id,omitempty"`
+}
+
+type CreateTimeTeacherResponse struct {
+	AllTimeTeacher
+}
+type UpdateTimeTeacherRequest struct {
+	Id        int64  `path:"time_teacher_id"`
+	UserId    string `header:"User-Id"`
+	Time      Time   `json:"time"`
+	TeacherId string `json:"teacher_id,omitempty"`
+}
+
+type UpdateTimeTeacherResponse struct {
+	OneTimeTeacher
+}
+
+type DeleteTimeTeacherRequest struct {
+	Id        int64  `path:"time_teacher_id"`
+	UserId    string `header:"User-Id"`
+	TeacherId string `query:"teacher_id,omitempty"`
+}
+
+type DeleteTimeTeacherResponse struct {
+	BasicResponse
+}

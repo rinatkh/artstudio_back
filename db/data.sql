@@ -57,14 +57,51 @@ create table public.DepartmentSubjects
 
 create table public.schedules
 (
-    subject_id bigint                   NOT NULL REFERENCES subjects (id),
-    student_id text                     NOT NULL REFERENCES users (uuid),
+    subject_id   bigint                   NOT NULL REFERENCES subjects (id),
+    student_id   text                     NOT NULL REFERENCES users (uuid),
     PRIMARY KEY (subject_id, student_id),
-    when_time  timestamp with time zone not null,
-    isPaid     boolean                  not null
+    when_time    timestamp with time zone not null,
+    is_paid      boolean                  not null,
+    is_finished  boolean                  not null,
+    is_confirmed boolean                  not null
 );
 
 alter table schedules
+    owner to postgres;
+
+create table public.statistic_students
+(
+    id                   bigserial primary key not null,
+    student_id           text                  NOT NULL REFERENCES users (uuid),
+    balance_lessons      int                   not null default 0,
+    done_lessons         int                   not null default 0,
+    need_payment_lessons int                   not null default 0
+);
+
+alter table statistic_students
+    owner to postgres;
+
+create table public.statistic_teachers
+(
+    id              bigserial primary key not null,
+    teacher_id      text                  NOT NULL REFERENCES users (uuid),
+    future_lessons  int                   not null default 0,
+    need_dz_lessons int                   not null default 0,
+    past_lessons    int                   not null default 0
+);
+
+alter table statistic_teachers
+    owner to postgres;
+
+create table public.time_teachers
+(
+    id          bigserial primary key    not null,
+    teacher_id  text                     NOT NULL REFERENCES users (uuid),
+    start_time  timestamp with time zone not null,
+    finish_time timestamp with time zone not null
+);
+
+alter table time_teachers
     owner to postgres;
 
 create table public.clients

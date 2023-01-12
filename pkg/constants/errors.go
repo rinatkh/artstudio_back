@@ -28,6 +28,7 @@ var (
 	ErrUserDBNotFound          = &CodedError{errors.New("user not found in the database"), fiber.StatusBadRequest}
 	ErrDepartmentDBNotFound    = &CodedError{errors.New("department not found in the database"), fiber.StatusBadRequest}
 	ErrSubjectDBNotFound       = &CodedError{errors.New("subject not found in the database"), fiber.StatusBadRequest}
+	ErrTimeTeachersDBNotFound  = &CodedError{errors.New("timeTeachers not found in the database"), fiber.StatusBadRequest}
 	ErrTelegramDBNotFound      = &CodedError{errors.New("telegram not found in the database"), fiber.StatusBadRequest}
 	ErrOrderDBNotFound         = &CodedError{errors.New("order not found in the database"), fiber.StatusBadRequest}
 	AuthError                  = &CodedError{errors.New("Invalid public api key"), fiber.StatusUnauthorized}

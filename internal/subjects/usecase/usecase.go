@@ -18,20 +18,20 @@ type SubjectUseCase struct {
 	cfg         *config.Config
 	log         *logrus.Entry
 	repoSubject subjects.SubjectRepository
-	userUС      users.UseCase
+	userUC      users.UseCase
 }
 
-func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.SubjectRepository, userUS users.UseCase) subjects.UseCase {
+func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.SubjectRepository, userUC users.UseCase) subjects.UseCase {
 	return &SubjectUseCase{
 		cfg:         cfg,
 		log:         log,
 		repoSubject: repoSubject,
-		userUС:      userUS,
+		userUC:      userUC,
 	}
 }
 
 func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (*dtoSubject.CreateSubjectResponse, error) {
-	user, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
+	user, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 	}
 	var tutor dtoUser.User
 	if params.TeacherId != "" {
-		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 	if check == nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	user, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
+	user, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 	}
 	var tutor dtoUser.User
 	if params.TeacherId != "" {
-		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +125,7 @@ func (u SubjectUseCase) DeleteSubject(params *dtoSubject.DeleteSubjectRequest) (
 	if check == nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
+	teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.UserId})
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 	if result == nil {
 		return nil, constants.ErrSubjectDBNotFound
 	}
-	teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: result.TeacherId})
+	teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: result.TeacherId})
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dtoSubject.GetSubjectsResponse, error) {
 	var teacherId string
 	if params.TeacherId != "" {
-		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
+		teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: params.TeacherId})
 		if err != nil {
 			return nil, err
 		}
@@ -178,7 +178,7 @@ func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dto
 	}
 	var result []dtoSubject.Subject
 	for _, i := range *list {
-		teacher, err := u.userUС.GetUser(&dtoUser.GetUserRequest{Id: i.TeacherId})
+		teacher, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: i.TeacherId})
 		if err != nil {
 			return nil, err
 		}

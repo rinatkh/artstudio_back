@@ -1,5 +1,7 @@
 package consts
 
+import "time"
+
 const (
 	INQUEUE        = 1
 	ALREADYSTUDENT = 2
@@ -24,4 +26,9 @@ const (
 	MAN     = "M"
 	WOMAN   = "W"
 	NOTHING = ""
+)
+
+const (
+	LessonTime = 45 * time.Minute
+	Duration   = 15 * time.Minute
 )
