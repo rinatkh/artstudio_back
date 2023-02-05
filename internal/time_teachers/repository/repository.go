@@ -2,12 +2,12 @@ package repository
 
 import (
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	timeTeacher "github.com/rinatkh/artstudio_back/internal/time_teachers"
 	"github.com/rinatkh/artstudio_back/internal/time_teachers/models/core"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type postgresRepository struct {
@@ -21,14 +21,14 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) timeTeacher.TimeTeach
 		log: log,
 	}
 }
-func (p postgresRepository) GetTimeTeachers(teacherId string, startTime, finishTime time.Time) (*[]core.TimeTeacher, error) {
+func (p postgresRepository) GetTimeTeachers(teacherId string, startTime, finishTime int64) (*[]core.TimeTeacher, error) {
 	var data []core.TimeTeacher
 	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE teacher_id='%s' AND start_time >= $1 and finish_time <= $2", teacherId), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, nil
+		return nil, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)
 	}
 	return &data, nil
 }
@@ -40,7 +40,7 @@ func (p postgresRepository) GetTimeTeacherById(id int64) (*core.TimeTeacher, err
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, nil
+		return nil, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)
 	}
 	return &data[0], nil
 }
@@ -71,6 +71,15 @@ func (p postgresRepository) UpdateTimeTeacher(timeTeacher *core.TimeTeacher) (*c
 
 func (p postgresRepository) DeleteTimeTeacher(id int64) error {
 	res, err := p.db.Query(fmt.Sprintf("DELETE FROM time_teachers WHERE id='%d'", id))
+
+	if res != nil {
+		_ = res.Close()
+	}
+	return err
+}
+
+func (p postgresRepository) DeleteTimeTeacherByUserId(id string) error {
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM time_teachers WHERE teacher_id='%s'", id))
 
 	if res != nil {
 		_ = res.Close()

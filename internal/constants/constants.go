@@ -29,6 +29,8 @@ const (
 )
 
 const (
-	LessonTime = 45 * time.Minute
-	Duration   = 15 * time.Minute
+	LessonTime              = 45 * time.Minute
+	Duration                = 15 * time.Minute
+	DurationForInputTime    = int64(15 * time.Minute)
+	EmountLessonsInParallel = 2
 )

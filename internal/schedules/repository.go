@@ -1,11 +1,18 @@
 package schedules
 
-import "github.com/rinatkh/artstudio_back/internal/users/models/core"
+import (
+	"github.com/rinatkh/artstudio_back/internal/schedules/models/core"
+)
 
-type UserRepository interface {
-	GetUserById(id string) (*core.User, error)
-	GetUsers(limit, offset int64) (*[]core.User, int64, error)
-	DeleteUser(id string) error
-	CreateUser(user *core.User) (*core.User, error)
-	UpdateUser(user *core.User) (*core.User, error)
+type ScheduleRepository interface {
+	GetScheduleById(id int64) (*core.Schedule, error)
+	GetTeacherSchedules(teacherId string, startTime, finishTime int64) (*[]core.Schedule, error)
+	GetStudentSchedules(studentId string, startTime, finishTime int64) (*[]core.Schedule, error)
+	GetSubjectSchedules(subjectId int64, startTime, finishTime int64) (*[]core.Schedule, error)
+	GetSchedules(startTime, finishTime int64) (*[]core.Schedule, error)
+	DeleteSchedule(id int64) error
+	DeleteScheduleBySubjectId(id int64) error
+	DeleteScheduleByStudentId(id string) error
+	CreateSchedule(schedule *core.Schedule) (*core.Schedule, error)
+	UpdateSchedule(schedule *core.Schedule) (*core.Schedule, error)
 }

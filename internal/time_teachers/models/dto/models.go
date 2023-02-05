@@ -2,14 +2,13 @@ package dto
 
 import (
 	"github.com/rinatkh/artstudio_back/internal/users/models/dto"
-	"time"
 )
 
 // TimeTeacher Only for Responses
 type TimeTeacher struct {
-	Id         int64     `json:"id"`
-	StartTime  time.Time `json:"start_time"`
-	FinishTime time.Time `json:"finish_time"`
+	Id         int64 `json:"id"`
+	StartTime  int64 `json:"start_time"`
+	FinishTime int64 `json:"finish_time"`
 }
 
 type AllTimeTeacher struct {
@@ -35,8 +34,8 @@ type GetTimeTeacherResponse struct {
 type GetTimeTeachersRequest struct {
 	UserId     string `header:"User-Id"`
 	TeacherId  string `query:"teacher_id"`
-	StartTime  string `query:"start_time"`
-	FinishTime string `query:"finish_time"`
+	StartTime  int64  `query:"start_time"`
+	FinishTime int64  `query:"finish_time"`
 }
 
 type GetTimeTeachersResponse struct {
@@ -44,8 +43,8 @@ type GetTimeTeachersResponse struct {
 }
 
 type Time struct {
-	StartTime  string `json:"start_time"`
-	FinishTime string `json:"finish_time"`
+	StartTime  int64 `json:"start_time"`
+	FinishTime int64 `json:"finish_time"`
 }
 
 type CreateTimeTeacherRequest struct {

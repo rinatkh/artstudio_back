@@ -1,10 +1,8 @@
 package core
 
-import "time"
-
 type TimeTeacher struct {
-	Id         int64     `db:"id"`
-	TeacherId  string    `db:"teacher_id"`
-	StartTime  time.Time `db:"start_time"`
-	FinishTime time.Time `db:"finish_time"`
+	Id         int64  `db:"id"`
+	TeacherId  string `db:"teacher_id"`
+	StartTime  int64  `db:"start_time"`
+	FinishTime int64  `db:"finish_time"`
 }

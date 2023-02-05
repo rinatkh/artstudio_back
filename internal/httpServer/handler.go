@@ -34,6 +34,18 @@ import (
 	statisticTeacherRepository "github.com/rinatkh/artstudio_back/internal/statistic_teachers/repository"
 	statisticTeacherUsecase "github.com/rinatkh/artstudio_back/internal/statistic_teachers/usecase"
 
+	statisticStudentHTTP "github.com/rinatkh/artstudio_back/internal/statistic_students/delivery/http"
+	statisticStudentRepository "github.com/rinatkh/artstudio_back/internal/statistic_students/repository"
+	statisticStudentUsecase "github.com/rinatkh/artstudio_back/internal/statistic_students/usecase"
+
+	scheduleHTTP "github.com/rinatkh/artstudio_back/internal/schedules/delivery/http"
+	scheduleRepository "github.com/rinatkh/artstudio_back/internal/schedules/repository"
+	scheduleUsecase "github.com/rinatkh/artstudio_back/internal/schedules/usecase"
+
+	cabinetHTTP "github.com/rinatkh/artstudio_back/internal/cabinet/delivery/http"
+	cabinetRepository "github.com/rinatkh/artstudio_back/internal/cabinet/repository"
+	cabinetUsecase "github.com/rinatkh/artstudio_back/internal/cabinet/usecase"
+
 	departmentSubjectsRepository "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/repository"
 	departmentSubjectsUsecase "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/usecase"
 
@@ -58,16 +70,22 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	departmentSubjectsRepo := departmentSubjectsRepository.NewPostgresRepository(postgreConnection, s.log)
 	timeTeacherRepo := timeTeacherRepository.NewPostgresRepository(postgreConnection, s.log)
 	statisticTeacherRepo := statisticTeacherRepository.NewPostgresRepository(postgreConnection, s.log)
+	statisticStudentRepo := statisticStudentRepository.NewPostgresRepository(postgreConnection, s.log)
+	scheduleStudentRepo := scheduleRepository.NewPostgresRepository(postgreConnection, s.log)
+	cabinetRepo := cabinetRepository.NewPostgresRepository(postgreConnection, s.log)
 
-	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo, authRepo)
+	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo, authRepo, statisticStudentRepo, statisticTeacherRepo, timeTeacherRepo, scheduleStudentRepo)
 	authUC := authUsecase.NewAuthUC(s.cfg, s.log, authRepo, userUC)
 	oauthUC := oauthUsecase.NewOauthUC(s.cfg, s.log, userRepo)
 	timeTeacherUC := timeTeacherUsecase.NewSubjectUC(s.cfg, s.log, timeTeacherRepo, userUC)
 	statisticTeacherUC := statisticTeacherUsecase.NewStatisticTeacherUC(s.cfg, s.log, statisticTeacherRepo, userUC)
+	statisticStudentUC := statisticStudentUsecase.NewStatisticStudentUC(s.cfg, s.log, statisticStudentRepo, userUC)
 	staticUC := staticUsecase.NewStaticUC(s.cfg, s.log)
 	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
 	departmentSubjectsUC := departmentSubjectsUsecase.NewDepartmentSubjectsUC(s.cfg, s.log, departmentSubjectsRepo, subjectUC, departmentRepo)
 	departmentUC := departmentUsecase.NewDepartmentUC(s.cfg, s.log, departmentRepo, subjectUC, departmentSubjectsUC, userUC)
+	scheduleUC := scheduleUsecase.NewScheduleUC(s.cfg, s.log, scheduleStudentRepo, userUC, subjectUC, timeTeacherRepo, cabinetRepo)
+	cabinetUC := cabinetUsecase.NewCabinetUC(s.cfg, s.log, cabinetRepo, userUC)
 
 	authHandler := authHTTP.NewAuthHandler(authUC, s.log, s.cfg)
 	oauthHandler := oauthHTTP.NewOauthHandler(oauthUC, s.log, s.cfg)
@@ -77,6 +95,9 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	departmentHandler := departmentHTTP.NewDepartmentHandler(departmentUC, s.log)
 	timeTeacherHandler := timeTeacherHTTP.NewTimeTeacherHandler(timeTeacherUC, s.log)
 	statisticTeacherHandler := statisticTeacherHTTP.NewStatisticTeacherHandler(statisticTeacherUC, s.log)
+	statisticStudentHandler := statisticStudentHTTP.NewStatisticStudentHandler(statisticStudentUC, s.log)
+	scheduleHandler := scheduleHTTP.NewScheduleHandler(scheduleUC, s.log)
+	cabinetHandler := cabinetHTTP.NewCabinetHandler(cabinetUC, s.log)
 
 	app.Use(serverLogger.New())
 	if _, ok := os.LookupEnv("LOCAL"); !ok {
@@ -88,7 +109,7 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 		AllowHeaders: "*",
 	}))
 
-	mw := middleware.NewMDWManager(s.cfg)
+	mw := middleware.NewMDWManager(s.cfg, userRepo)
 
 	authHTTP.MapAuthRoutes(app, authHandler)
 	oauthHTTP.MapOauthRoutes(app, oauthHandler, mw)
@@ -98,6 +119,9 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	departmentHTTP.MapDepartmentRoutes(app, departmentHandler, mw)
 	timeTeacherHTTP.MapTimeTeacherRoutes(app, timeTeacherHandler, mw)
 	statisticTeacherHTTP.MapStatisticTeacherRoutes(app, statisticTeacherHandler, mw)
+	statisticStudentHTTP.MapStatisticStudentRoutes(app, statisticStudentHandler, mw)
+	scheduleHTTP.MapSchedulesRoutes(app, scheduleHandler, mw)
+	cabinetHTTP.MapCabinetRoutes(app, cabinetHandler, mw)
 
 	return nil
 }

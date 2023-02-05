@@ -4,6 +4,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	consts "github.com/rinatkh/artstudio_back/internal/constants"
+	"github.com/rinatkh/artstudio_back/internal/users"
 	"io"
 	"sort"
 
@@ -14,12 +16,14 @@ import (
 )
 
 type MDWManager struct {
-	cfg *config.Config
+	cfg      *config.Config
+	userRepo users.UserRepository
 }
 
-func NewMDWManager(cfg *config.Config) *MDWManager {
+func NewMDWManager(cfg *config.Config, userRepo users.UserRepository) *MDWManager {
 	return &MDWManager{
-		cfg: cfg,
+		cfg:      cfg,
+		userRepo: userRepo,
 	}
 }
 
@@ -37,6 +41,19 @@ func (mw *MDWManager) VerifyTokenMiddleware() fiber.Handler {
 		}
 
 		ctx.Request().Header.Add(constants.CtxKeyUserID, token.UserID)
+		return ctx.Next()
+	}
+}
+
+func (mw *MDWManager) VerifyAdminMiddleware() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		user, err := mw.userRepo.GetUserById(ctx.Get(constants.CtxKeyUserID))
+		if err != nil {
+			return err
+		}
+		if user.Role == consts.Admin {
+			return constants.ErrNoPrivileges
+		}
 		return ctx.Next()
 	}
 }

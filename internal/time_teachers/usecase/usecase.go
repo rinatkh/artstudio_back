@@ -12,8 +12,8 @@ import (
 	"github.com/rinatkh/artstudio_back/internal/users"
 	dtoUser "github.com/rinatkh/artstudio_back/internal/users/models/dto"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
+	"github.com/rinatkh/artstudio_back/pkg/utils"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type TimeTeacherUseCase struct {
@@ -79,6 +79,9 @@ func (u TimeTeacherUseCase) DeleteTimeTeacher(params *dto.DeleteTimeTeacherReque
 }
 
 func (u TimeTeacherUseCase) UpdateTimeTeacher(params *dto.UpdateTimeTeacherRequest) (*dto.UpdateTimeTeacherResponse, error) {
+	if err := utils.IsTime15MinDuration(params.Time.StartTime, params.Time.FinishTime); err != nil {
+		return nil, err
+	}
 	teacher, err := u.getTeacher(params.UserId, params.TeacherId)
 	if err != nil {
 		return nil, err
@@ -93,20 +96,11 @@ func (u TimeTeacherUseCase) UpdateTimeTeacher(params *dto.UpdateTimeTeacherReque
 	if teacher.Id != params.TeacherId {
 		return nil, constants.ErrNoPrivileges
 	}
-	startTime, err := time.Parse(time.RFC3339, params.Time.StartTime)
-	if err != nil {
-		return nil, constants.ErrConvertData
-	}
-	finishTime, err := time.Parse(time.RFC3339, params.Time.FinishTime)
-	if err != nil {
-		return nil, constants.ErrConvertData
-	}
-
 	updateT, err := u.repoTimeTeacher.UpdateTimeTeacher(&core.TimeTeacher{
 		Id:         params.Id,
 		TeacherId:  teacher.Id,
-		StartTime:  startTime,
-		FinishTime: finishTime,
+		StartTime:  params.Time.StartTime,
+		FinishTime: params.Time.FinishTime,
 	})
 	if err != nil {
 		return nil, err
@@ -127,15 +121,10 @@ func (u TimeTeacherUseCase) GetTimeTeacher(params *dto.GetTimeTeacherRequest) (*
 }
 
 func (u TimeTeacherUseCase) GetTimeTeachers(params *dto.GetTimeTeachersRequest) (*dto.GetTimeTeachersResponse, error) {
-	startTime, err := time.Parse(time.RFC3339, params.StartTime)
-	if err != nil {
-		return nil, constants.ErrConvertData
+	if err := utils.IsTime15MinDuration(params.StartTime, params.FinishTime); err != nil {
+		return nil, err
 	}
-	finishTime, err := time.Parse(time.RFC3339, params.FinishTime)
-	if err != nil {
-		return nil, constants.ErrConvertData
-	}
-	result, err := u.repoTimeTeacher.GetTimeTeachers(params.TeacherId, startTime, finishTime)
+	result, err := u.repoTimeTeacher.GetTimeTeachers(params.TeacherId, params.StartTime, params.FinishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -147,24 +136,21 @@ func (u TimeTeacherUseCase) GetTimeTeachers(params *dto.GetTimeTeachersRequest) 
 }
 
 func (u TimeTeacherUseCase) CreateTimeTeacher(params *dto.CreateTimeTeacherRequest) (*dto.CreateTimeTeacherResponse, error) {
+	for _, i := range params.Time {
+		if err := utils.IsTime15MinDuration(i.StartTime, i.FinishTime); err != nil {
+			return nil, err
+		}
+	}
 	teacher, err := u.getTeacher(params.UserId, params.TeacherId)
 	if err != nil {
 		return nil, err
 	}
 	var temp []core.TimeTeacher
 	for _, i := range params.Time {
-		startTime, err := time.Parse(time.RFC3339, i.StartTime)
-		if err != nil {
-			return nil, constants.ErrConvertData
-		}
-		finishTime, err := time.Parse(time.RFC3339, i.FinishTime)
-		if err != nil {
-			return nil, constants.ErrConvertData
-		}
 		temp = append(temp, core.TimeTeacher{
 			TeacherId:  teacher.Id,
-			StartTime:  startTime,
-			FinishTime: finishTime,
+			StartTime:  i.StartTime,
+			FinishTime: i.FinishTime,
 		})
 	}
 	var result []core.TimeTeacher

@@ -52,6 +52,7 @@ func (u TimeTeacherHandler) UpdateTimeTeacher() fiber.Handler {
 			return err
 		}
 		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		params.TeacherId = ctx.Query("teacher_id")
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}
@@ -90,8 +91,15 @@ func (u TimeTeacherHandler) GetTimeTeachers() fiber.Handler {
 
 		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		params.TeacherId = ctx.Query("teacher_id")
-		params.StartTime = ctx.Query("start_time")
-		params.FinishTime = ctx.Query("finish_time")
+		var err error
+		params.StartTime, err = strconv.ParseInt(ctx.Query("start_time"), 10, 64)
+		if err != nil {
+			return err
+		}
+		params.StartTime, err = strconv.ParseInt(ctx.Query("finish_time"), 10, 64)
+		if err != nil {
+			return err
+		}
 
 		data, err := u.timeTeacherUC.GetTimeTeachers(&params)
 		if err != nil {

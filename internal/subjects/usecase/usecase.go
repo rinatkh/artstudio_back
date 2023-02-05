@@ -39,6 +39,7 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 		Name:        params.Name,
 		Description: params.Description,
 		Image:       params.Image,
+		CabinetId:   params.CabinetId,
 	}
 	var tutor dtoUser.User
 	if params.TeacherId != "" {
@@ -86,6 +87,7 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 		Name:        params.Name,
 		Description: params.Description,
 		Image:       params.Image,
+		CabinetId:   params.CabinetId,
 	}
 	var tutor dtoUser.User
 	if params.TeacherId != "" {

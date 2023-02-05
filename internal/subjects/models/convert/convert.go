@@ -8,10 +8,11 @@ import (
 
 func Subject2DTO(subject *core.Subject, teacher *dtoUser.User) dtoSubject.Subject {
 	result := dtoSubject.Subject{
-		Id:      subject.Id,
-		Name:    subject.Name,
-		Image:   subject.Image,
-		Teacher: *teacher,
+		Id:        subject.Id,
+		Name:      subject.Name,
+		Image:     subject.Image,
+		Teacher:   *teacher,
+		CabinetId: subject.CabinetId,
 	}
 	if subject.Description != "" {
 		result.Description = subject.Description

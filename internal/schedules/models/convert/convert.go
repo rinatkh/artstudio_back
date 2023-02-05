@@ -1,24 +1,20 @@
 package convert
 
 import (
-	"github.com/rinatkh/artstudio_back/internal/users/models/core"
-	"github.com/rinatkh/artstudio_back/internal/users/models/dto"
-	"github.com/rinatkh/artstudio_back/pkg/utils"
-	"time"
+	"github.com/rinatkh/artstudio_back/internal/schedules/models/core"
+	"github.com/rinatkh/artstudio_back/internal/schedules/models/dto"
+	dtoSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/dto"
+	dtoUser "github.com/rinatkh/artstudio_back/internal/users/models/dto"
 )
 
-func User2DTO(user *core.User) dto.User {
-	result := dto.User{
-		Id:        user.Id,
-		Firstname: user.Firstname,
-		Surname:   user.Surname,
-		Age:       utils.RoundTime(time.Now().Sub(user.BirthDate).Seconds() / 31207680),
-		Sex:       user.Sex,
-		Image:     user.Image,
-		Role:      user.Role,
+func Schedule2DTO(schedule *core.Schedule, subject dtoSubject.Subject, user dtoUser.User, cabinetName string) dto.Schedule {
+	return dto.Schedule{
+		Subject:     subject,
+		WhenTime:    schedule.WhenTime,
+		Student:     user,
+		IsPaid:      schedule.IsPaid,
+		Description: schedule.Description,
+		IsConfirmed: schedule.IsConfirmed,
+		Cabinet:     cabinetName,
 	}
-	if user.Middlename != "" {
-		result.Middlename = user.Middlename
-	}
-	return result
 }

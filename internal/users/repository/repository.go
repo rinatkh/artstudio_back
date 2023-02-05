@@ -28,7 +28,7 @@ func (p postgresRepository) GetUserById(id string) (*core.User, error) {
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, nil
+		return nil, constants.ErrUserDBNotFound
 	}
 	return &data[0], nil
 }
@@ -61,7 +61,7 @@ func (p postgresRepository) GetUsers(limit, offset int64) (*[]core.User, int64, 
 }
 
 func (p postgresRepository) CreateUser(user *core.User) (*core.User, error) {
-	res, err := p.db.Query("INSERT INTO users (firstname, surname, middlename, sex, birth_date, role, image) VALUES ($1, $2, $3, $4, $5, $6, $7)", user.Firstname, user.Surname, user.Middlename, user.Sex, user.BirthDate, user.Role, user.Image)
+	res, err := p.db.Query("INSERT INTO users (firstname, surname, middlename, sex, birth_date, role, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", user.Firstname, user.Surname, user.Middlename, user.Sex, user.BirthDate, user.Role, user.Image, user.CreateAt)
 	if res != nil {
 		_ = res.Close()
 	}

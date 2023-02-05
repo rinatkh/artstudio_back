@@ -7,6 +7,7 @@ type Subject struct {
 	Id          int64    `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description,omitempty"`
+	CabinetId   int64    `json:"cabinet_id,omitempty"`
 	Image       string   `json:"image"`
 	Teacher     dto.User `json:"teacher"`
 }
@@ -29,6 +30,7 @@ type CreateSubjectRequest struct {
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image"`
 	TeacherId   string `json:"teacher_id,omitempty"`
+	CabinetId   int64  `json:"cabinet_id,omitempty"`
 }
 
 type UpdateSubjectRequest struct {
@@ -38,6 +40,7 @@ type UpdateSubjectRequest struct {
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image"`
 	TeacherId   string `json:"teacher_id,omitempty"`
+	CabinetId   int64  `json:"cabinet_id,omitempty"`
 }
 
 type DeleteSubjectRequest struct {

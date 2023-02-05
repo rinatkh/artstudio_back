@@ -26,8 +26,13 @@ func (u ScheduleHandler) DeleteSchedule() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		var params dto.DeleteScheduleRequest
-		params.Id = ctx.Params("schedule_id")
-		params.ScheduleId = ctx.Get(constants.CtxKeyUserID)
+		var err error
+		params.ScheduleId, err = strconv.ParseInt(ctx.Params("schedule_id", "20"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		data, err := u.scheduleUC.DeleteSchedule(&params)
 		if err != nil {
 			return err
@@ -40,8 +45,12 @@ func (u ScheduleHandler) UpdateSchedule() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		var params dto.UpdateScheduleRequest
-		params.Id = ctx.Params("schedule_id")
-		params.ScheduleId = ctx.Get(constants.CtxKeyUserID)
+		var err error
+		params.ScheduleId, err = strconv.ParseInt(ctx.Params("schedule_id"), 10, 64)
+		if err != nil {
+			return err
+		}
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}
@@ -54,13 +63,81 @@ func (u ScheduleHandler) UpdateSchedule() fiber.Handler {
 	}
 }
 
-func (u ScheduleHandler) CreateSchedules() fiber.Handler {
+func (u ScheduleHandler) CreateSchedule() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+
+		var params dto.CreateScheduleRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		if err := utils.ReadRequest(ctx, &params); err != nil {
+			return constants.InputError
+		}
+		data, err := u.scheduleUC.CreateSchedule(&params)
+		if err != nil {
+			return err
+		}
+		return ctx.JSON(data)
+	}
+}
+
+func (u ScheduleHandler) GetTeacherSchedules() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+
+		var params dto.GetTeacherSchedulesRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		params.TeacherId = ctx.Query("teacher_id")
+		var err error
+		params.StartTime, err = strconv.ParseInt(ctx.Query("start_time"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.FinishTime, err = strconv.ParseInt(ctx.Query("finish_time"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		data, err := u.scheduleUC.GetTeacherSchedules(&params)
+		if err != nil {
+			return err
+		}
+		return ctx.JSON(data)
+	}
+}
+func (u ScheduleHandler) GetStudentSchedules() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+
+		var params dto.GetStudentSchedulesRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		params.StudentId = ctx.Query("student_id")
+		var err error
+		params.StartTime, err = strconv.ParseInt(ctx.Query("start_time"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		params.FinishTime, err = strconv.ParseInt(ctx.Query("finish_time"),
+			10, 64)
+		if err != nil {
+			return err
+		}
+		data, err := u.scheduleUC.GetStudentSchedules(&params)
+		if err != nil {
+			return err
+		}
+		return ctx.JSON(data)
+	}
+}
+
+func (u ScheduleHandler) GetSchedule() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		var params dto.GetScheduleRequest
-		params.Id = ctx.Params("schedule_id")
-		if params.Id == "me" {
-			params.Id = ctx.Get(constants.CtxKeyUserID)
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
+		var err error
+		params.ScheduleId, err = strconv.ParseInt(ctx.Params("schedule_id"),
+			10, 64)
+		if err != nil {
+			return err
 		}
 		data, err := u.scheduleUC.GetSchedule(&params)
 		if err != nil {
@@ -70,22 +147,24 @@ func (u ScheduleHandler) CreateSchedules() fiber.Handler {
 	}
 }
 
-func (u ScheduleHandler) GetSchedules() fiber.Handler {
+func (u ScheduleHandler) GetSlots() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-
-		var params dto.GetchedulesRequest
+		var params dto.GetSlotsRequest
+		params.UserId = ctx.Get(constants.CtxKeyUserID)
 		var err error
-		params.Limit, err = strconv.ParseInt(ctx.Query("limit", "20"),
-			10, 64)
+		params.FinishTime, err = strconv.ParseInt(ctx.Query("finish_time"), 10, 64)
 		if err != nil {
 			return err
 		}
-		params.Offset, err = strconv.ParseInt(ctx.Query("offset", "0"),
-			10, 64)
+		params.StartTime, err = strconv.ParseInt(ctx.Query("start_time"), 10, 64)
 		if err != nil {
 			return err
 		}
-		data, err := u.scheduleUC.Getchedules(&params)
+		params.SubjectId, err = strconv.ParseInt(ctx.Query("subject_id"), 10, 64)
+		if err != nil {
+			return err
+		}
+		data, err := u.scheduleUC.GetSlotsSchedules(&params)
 		if err != nil {
 			return err
 		}

@@ -28,11 +28,13 @@ var (
 	ErrUserDBNotFound          = &CodedError{errors.New("user not found in the database"), fiber.StatusBadRequest}
 	ErrDepartmentDBNotFound    = &CodedError{errors.New("department not found in the database"), fiber.StatusBadRequest}
 	ErrSubjectDBNotFound       = &CodedError{errors.New("subject not found in the database"), fiber.StatusBadRequest}
+	ErrCabinetTimeDBNotFound   = &CodedError{errors.New("cabinet time not found"), fiber.StatusBadRequest}
+	ErrCabinetDBNotFound       = &CodedError{errors.New("cabinet not found"), fiber.StatusBadRequest}
+	ErrScheduleDBNotFound      = &CodedError{errors.New("schedule not found in the database"), fiber.StatusBadRequest}
 	ErrTimeTeachersDBNotFound  = &CodedError{errors.New("timeTeachers not found in the database"), fiber.StatusBadRequest}
 	ErrTelegramDBNotFound      = &CodedError{errors.New("telegram not found in the database"), fiber.StatusBadRequest}
 	ErrOrderDBNotFound         = &CodedError{errors.New("order not found in the database"), fiber.StatusBadRequest}
 	AuthError                  = &CodedError{errors.New("Invalid public api key"), fiber.StatusUnauthorized}
-	ErrConvertData             = &CodedError{errors.New("failed to convert"), fiber.StatusInternalServerError}
 	ErrDB                      = &CodedError{errors.New("failed working with db"), fiber.StatusInternalServerError}
 	ErrGenerateUUID            = &CodedError{errors.New("failed to generate UUID"), fiber.StatusInternalServerError}
 	ErrSignToken               = &CodedError{errors.New("failed to sign token"), fiber.StatusInternalServerError}
@@ -47,4 +49,5 @@ var (
 	ErrNoPrivileges      = &CodedError{errors.New("you have no privileges"), fiber.StatusForbidden}
 	ErrEmailAlreadyTaken = &CodedError{errors.New("email is taken already by other user"), fiber.StatusConflict}
 	ErrPasswordMismatch  = &CodedError{errors.New("password mismatch"), fiber.StatusUnauthorized}
+	ErrTimeNot15         = &CodedError{errors.New("time isn't 15 min devide"), fiber.StatusUnauthorized}
 )

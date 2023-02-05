@@ -5,8 +5,12 @@ import (
 	"github.com/rinatkh/artstudio_back/config"
 	"github.com/rinatkh/artstudio_back/internal/auth"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
+	"github.com/rinatkh/artstudio_back/internal/schedules"
+	statisticStudent "github.com/rinatkh/artstudio_back/internal/statistic_students"
+	statisticTeacher "github.com/rinatkh/artstudio_back/internal/statistic_teachers"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	coreSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/core"
+	timeTeacher "github.com/rinatkh/artstudio_back/internal/time_teachers"
 	"github.com/rinatkh/artstudio_back/internal/users"
 	"github.com/rinatkh/artstudio_back/internal/users/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/users/models/core"
@@ -17,20 +21,37 @@ import (
 )
 
 type UserUseCase struct {
-	cfg          *config.Config
-	log          *logrus.Entry
-	repoUser     users.UserRepository
-	repoSubjects subjects.SubjectRepository
-	repoAuth     auth.AuthRepository
+	cfg                   *config.Config
+	log                   *logrus.Entry
+	repoUser              users.UserRepository
+	repoSubjects          subjects.SubjectRepository
+	repoAuth              auth.AuthRepository
+	repoStatisticStudents statisticStudent.StatisticStudentRepository
+	repoStatisticTeacher  statisticTeacher.StatisticTeacherRepository
+	repoTimeTeacher       timeTeacher.TimeTeacherRepository
+	repoSchedule          schedules.ScheduleRepository
 }
 
-func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository, repoSubjects subjects.SubjectRepository, repoAuth auth.AuthRepository) users.UseCase {
+func NewUserUC(cfg *config.Config,
+	log *logrus.Entry,
+	repoUser users.UserRepository,
+	repoSubjects subjects.SubjectRepository,
+	repoAuth auth.AuthRepository,
+	repoStatisticStudents statisticStudent.StatisticStudentRepository,
+	repoStatisticTeacher statisticTeacher.StatisticTeacherRepository,
+	repoTimeTeacher timeTeacher.TimeTeacherRepository,
+	repoSchedule schedules.ScheduleRepository,
+) users.UseCase {
 	return &UserUseCase{
-		cfg:          cfg,
-		log:          log,
-		repoUser:     repoUser,
-		repoSubjects: repoSubjects,
-		repoAuth:     repoAuth,
+		cfg:                   cfg,
+		log:                   log,
+		repoUser:              repoUser,
+		repoSubjects:          repoSubjects,
+		repoAuth:              repoAuth,
+		repoStatisticStudents: repoStatisticStudents,
+		repoStatisticTeacher:  repoStatisticTeacher,
+		repoTimeTeacher:       repoTimeTeacher,
+		repoSchedule:          repoSchedule,
 	}
 }
 func (u UserUseCase) getRole(role string) string {
@@ -54,18 +75,16 @@ func (u UserUseCase) getSex(sex string) string {
 }
 
 func (u UserUseCase) CreateUser(params *dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
-	date, err := time.Parse("2006-01-02", params.BirthDate)
-	if err != nil {
-		return nil, constants.ErrConvertData
-	}
+
 	user := core.User{
 		Firstname:  params.Firstname,
 		Surname:    params.Surname,
 		Middlename: params.Middlename,
 		Sex:        u.getSex(params.Sex),
-		BirthDate:  date,
+		BirthDate:  params.BirthDate,
 		Role:       u.getRole(params.Role),
 		Image:      params.Image,
+		CreateAt:   time.Now().Unix(),
 	}
 	result, err := u.repoUser.CreateUser(&user)
 	if err != nil {
@@ -93,17 +112,13 @@ func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserR
 	if check == nil {
 		return nil, constants.ErrUserDBNotFound
 	}
-	date, err := time.Parse("2006-01-02", params.BirthDate)
-	if err != nil {
-		return nil, constants.ErrConvertData
-	}
 	user := core.User{
 		Id:         params.Id,
 		Firstname:  params.Firstname,
 		Surname:    params.Surname,
 		Middlename: params.Middlename,
 		Sex:        u.getSex(params.Sex),
-		BirthDate:  date,
+		BirthDate:  params.BirthDate,
 		Role:       u.getRole(params.Role),
 		Image:      params.Image,
 	}
@@ -146,6 +161,10 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 	}
 	if list != nil {
 		for _, i := range *list {
+			err = u.repoSchedule.DeleteScheduleBySubjectId(i.Id)
+			if err != nil {
+				return nil, err
+			}
 			err := u.repoSubjects.DeleteSubject(i.Id)
 			if err != nil {
 				return nil, err
@@ -153,6 +172,23 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 		}
 	}
 	err = u.repoAuth.DeleteUser(params.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	err = u.repoStatisticStudents.DeleteStatisticStudent(params.Id)
+	if err != nil {
+		return nil, err
+	}
+	err = u.repoStatisticTeacher.DeleteStatisticTeacher(params.Id)
+	if err != nil {
+		return nil, err
+	}
+	err = u.repoTimeTeacher.DeleteTimeTeacherByUserId(params.Id)
+	if err != nil {
+		return nil, err
+	}
+	err = u.repoSchedule.DeleteScheduleByStudentId(params.Id)
 	if err != nil {
 		return nil, err
 	}

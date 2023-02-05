@@ -8,9 +8,10 @@ import (
 func MapSchedulesRoutes(router fiber.Router, h *ScheduleHandler, mw *middleware.MDWManager) {
 	router.Put("/schedules/:schedule_id", mw.VerifyTokenMiddleware(), h.UpdateSchedule())
 	router.Delete("/schedules/:schedule_id", mw.VerifyTokenMiddleware(), h.DeleteSchedule())
-	router.Get("/schedules", mw.VerifyTokenMiddleware(), h.GetSchedules())
-	router.Post("/schedules", mw.VerifyTokenMiddleware(), h.CreateSchedules())
-}
+	router.Get("/schedules/:schedule_id", mw.VerifyTokenMiddleware(), h.GetSchedule())
+	router.Get("/schedules/teacher", mw.VerifyTokenMiddleware(), h.GetTeacherSchedules())
+	router.Get("/schedules/student", mw.VerifyTokenMiddleware(), h.GetStudentSchedules())
+	router.Post("/schedules", mw.VerifyTokenMiddleware(), h.CreateSchedule())
 
-// от студента отправить заявку учителю
-//
+	router.Get("/slots", mw.VerifyTokenMiddleware(), h.c())
+}
