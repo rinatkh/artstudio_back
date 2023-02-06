@@ -57,7 +57,7 @@ func (u TimeTeacherUseCase) getTeacher(userId, teacherId string) (*dtoUser.User,
 }
 
 func (u TimeTeacherUseCase) DeleteTimeTeacher(params *dto.DeleteTimeTeacherRequest) (*dto.DeleteTimeTeacherResponse, error) {
-	teacher, err := u.getTeacher(params.UserId, params.TeacherId)
+	teacher, err := u.getTeacher(params.UserId, consts.NOTHING)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (u TimeTeacherUseCase) DeleteTimeTeacher(params *dto.DeleteTimeTeacherReque
 	if timeT == nil {
 		return nil, constants.ErrTimeTeachersDBNotFound
 	}
-	if teacher.Id != params.TeacherId {
+	if teacher.Role == consts.Teacher && teacher.Id != timeT.TeacherId {
 		return nil, constants.ErrNoPrivileges
 	}
 	err = u.repoTimeTeacher.DeleteTimeTeacher(params.Id)
@@ -82,7 +82,7 @@ func (u TimeTeacherUseCase) UpdateTimeTeacher(params *dto.UpdateTimeTeacherReque
 	if err := utils.IsTime15MinDuration(params.Time.StartTime, params.Time.FinishTime); err != nil {
 		return nil, err
 	}
-	teacher, err := u.getTeacher(params.UserId, params.TeacherId)
+	teacher, err := u.getTeacher(params.UserId, consts.NOTHING)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (u TimeTeacherUseCase) UpdateTimeTeacher(params *dto.UpdateTimeTeacherReque
 	if timeT == nil {
 		return nil, constants.ErrTimeTeachersDBNotFound
 	}
-	if teacher.Id != params.TeacherId {
+	if teacher.Role == consts.Teacher && teacher.Id != timeT.TeacherId {
 		return nil, constants.ErrNoPrivileges
 	}
 	updateT, err := u.repoTimeTeacher.UpdateTimeTeacher(&core.TimeTeacher{

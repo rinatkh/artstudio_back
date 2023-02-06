@@ -105,7 +105,7 @@ func (p postgresRepository) GetCabinetTimes(cabinetId, startTime, finishTime int
 }
 func (p postgresRepository) checkCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND FROM_UNIXTIME(start_time) > $2 AND FROM_UNIXTIME(finish_time) < $3"), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND (FROM_UNIXTIME(start_time) >= $2 AND FROM_UNIXTIME(start_time) <= $3) OR (FROM_UNIXTIME(finish_time) >= $2 AND FROM_UNIXTIME(finish_time) <= $3) "), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
 	if err != nil {
 		return nil, err
 	}

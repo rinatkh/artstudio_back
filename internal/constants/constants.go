@@ -31,6 +31,6 @@ const (
 const (
 	LessonTime              = 45 * time.Minute
 	Duration                = 15 * time.Minute
-	DurationForInputTime    = int64(15 * time.Minute)
+	DurationForInputTime    = 900
 	EmountLessonsInParallel = 2
 )

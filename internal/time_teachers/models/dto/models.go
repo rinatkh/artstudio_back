@@ -57,10 +57,9 @@ type CreateTimeTeacherResponse struct {
 	AllTimeTeacher
 }
 type UpdateTimeTeacherRequest struct {
-	Id        int64  `path:"time_teacher_id"`
-	UserId    string `header:"User-Id"`
-	Time      Time   `json:"time"`
-	TeacherId string `json:"teacher_id,omitempty"`
+	Id     int64  `path:"time_teacher_id"`
+	UserId string `header:"User-Id"`
+	Time   Time   `json:"time"`
 }
 
 type UpdateTimeTeacherResponse struct {
@@ -68,9 +67,8 @@ type UpdateTimeTeacherResponse struct {
 }
 
 type DeleteTimeTeacherRequest struct {
-	Id        int64  `path:"time_teacher_id"`
-	UserId    string `header:"User-Id"`
-	TeacherId string `query:"teacher_id,omitempty"`
+	Id     int64  `path:"time_teacher_id"`
+	UserId string `header:"User-Id"`
 }
 
 type DeleteTimeTeacherResponse struct {
