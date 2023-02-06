@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/rinatkh/artstudio_back/internal/cabinets"
 	"github.com/rinatkh/artstudio_back/internal/cabinets/models/core"
@@ -92,7 +94,18 @@ func (p postgresRepository) GetCountCabinets() (int64, error) {
 
 func (p postgresRepository) GetCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND FROM_UNIXTIME(start_time) >= $2 AND  FROM_UNIXTIME(finish_time) <= $3"), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND FROM_UNIXTIME(start_time) >= $2 AND FROM_UNIXTIME(finish_time) <= $3"), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, constants.ErrCabinetTimeDBNotFound
+	}
+	return &data, nil
+}
+func (p postgresRepository) checkCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
+	var data []core.CabinetTime
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND FROM_UNIXTIME(start_time) > $2 AND FROM_UNIXTIME(finish_time) < $3"), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +128,9 @@ func (p postgresRepository) CreateCabinet(cabinet *core.Cabinet) (*core.Cabinet,
 }
 
 func (p postgresRepository) CreateCabinetTime(cabinetTime *core.CabinetTime) (*core.CabinetTime, error) {
+	if _, err := p.checkCabinetTimes(cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime); !errors.Is(err, constants.ErrCabinetTimeDBNotFound) {
+		return nil, constants.NewCodedError("Cabinet isn't free at this time, choose another one", fiber.StatusConflict)
+	}
 	res, err := p.db.Query("INSERT INTO cabinetTimes (subject_id, cabinet_id, start_time, finish_time) VALUES ($1, $2, $3, $4)", cabinetTime.SubjectId, cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime)
 	if res != nil {
 		_ = res.Close()
