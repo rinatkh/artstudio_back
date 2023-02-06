@@ -13,5 +13,5 @@ func MapSchedulesRoutes(router fiber.Router, h *ScheduleHandler, mw *middleware.
 	router.Get("/schedules/student", mw.VerifyTokenMiddleware(), h.GetStudentSchedules())
 	router.Post("/schedules", mw.VerifyTokenMiddleware(), h.CreateSchedule())
 
-	router.Get("/slots", mw.VerifyTokenMiddleware(), h.c())
+	router.Get("/slots", mw.VerifyTokenMiddleware(), h.GetSlots())
 }

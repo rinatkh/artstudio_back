@@ -10,7 +10,6 @@ import (
 	"github.com/rinatkh/artstudio_back/internal/users/models/core"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type OauthUseCase struct {
@@ -35,7 +34,7 @@ func (u OauthUseCase) AuthenticateThroughTelergam(params *dto.AuthenticateThroug
 			Firstname: params.FirstName,
 			Surname:   params.LastName,
 			Sex:       consts.NOTHING,
-			BirthDate: time.Time{},
+			BirthDate: 0,
 			Role:      consts.Student,
 			Image:     params.Image,
 		}

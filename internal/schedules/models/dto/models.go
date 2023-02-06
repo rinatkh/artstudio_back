@@ -13,7 +13,7 @@ type Schedule struct {
 	IsPaid      bool               `json:"is_paid"`
 	Description string             `json:"description"`
 	IsConfirmed bool               `json:"is_confirmed"`
-	Cabinet     string             `json:"cabinet"`
+	Cabinet     string             `json:"cabinets"`
 }
 
 type BasicResponse struct{}

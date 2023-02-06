@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/rinatkh/artstudio_back/internal/cabinet"
-	"github.com/rinatkh/artstudio_back/internal/cabinet/models/dto"
+	"github.com/rinatkh/artstudio_back/internal/cabinets"
+	"github.com/rinatkh/artstudio_back/internal/cabinets/models/dto"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/rinatkh/artstudio_back/pkg/utils"
 	"github.com/sirupsen/logrus"
@@ -11,11 +11,11 @@ import (
 )
 
 type CabinetHandler struct {
-	cabinetUC cabinet.UseCase
+	cabinetUC cabinets.UseCase
 	log       *logrus.Entry
 }
 
-func NewCabinetHandler(cabinetUC cabinet.UseCase, log *logrus.Entry) *CabinetHandler {
+func NewCabinetHandler(cabinetUC cabinets.UseCase, log *logrus.Entry) *CabinetHandler {
 	return &CabinetHandler{
 		cabinetUC: cabinetUC,
 		log:       log,

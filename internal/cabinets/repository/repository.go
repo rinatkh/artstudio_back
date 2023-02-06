@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/rinatkh/artstudio_back/internal/cabinet"
-	"github.com/rinatkh/artstudio_back/internal/cabinet/models/core"
+	"github.com/rinatkh/artstudio_back/internal/cabinets"
+	"github.com/rinatkh/artstudio_back/internal/cabinets/models/core"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
 	"time"
@@ -15,7 +15,7 @@ type postgresRepository struct {
 	log *logrus.Entry
 }
 
-func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) cabinet.CabinetRepository {
+func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) cabinets.CabinetRepository {
 	return &postgresRepository{
 		db:  db,
 		log: log,
@@ -170,7 +170,7 @@ func (p postgresRepository) DeleteCabinetTime(id int64) error {
 
 func (p postgresRepository) getCabinet(cabinet *core.Cabinet) (*core.Cabinet, error) {
 	var data []core.Cabinet
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinets WHERE name='%d'", cabinet.Name))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinets WHERE name='%s'", cabinet.Name))
 	if err != nil {
 		return nil, err
 	}

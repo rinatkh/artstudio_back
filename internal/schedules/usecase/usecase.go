@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
-	"github.com/rinatkh/artstudio_back/internal/cabinet"
-	coreCabinet "github.com/rinatkh/artstudio_back/internal/cabinet/models/core"
+	"github.com/rinatkh/artstudio_back/internal/cabinets"
+	coreCabinet "github.com/rinatkh/artstudio_back/internal/cabinets/models/core"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/schedules"
 	"github.com/rinatkh/artstudio_back/internal/schedules/models/convert"
@@ -30,12 +30,12 @@ type ScheduleUseCase struct {
 	UserUC          users.UseCase
 	SubjectUC       subjects.UseCase
 	repoTimeTeacher timeTeacher.TimeTeacherRepository
-	repoCabinet     cabinet.CabinetRepository
+	repoCabinet     cabinets.CabinetRepository
 }
 
 func NewScheduleUC(cfg *config.Config, log *logrus.Entry, repoSchedule schedules.ScheduleRepository,
 	UserUC users.UseCase, SubjectUC subjects.UseCase,
-	repoTimeTeacher timeTeacher.TimeTeacherRepository, repoCabinet cabinet.CabinetRepository) schedules.UseCase {
+	repoTimeTeacher timeTeacher.TimeTeacherRepository, repoCabinet cabinets.CabinetRepository) schedules.UseCase {
 	return &ScheduleUseCase{
 		cfg:             cfg,
 		log:             log,
@@ -149,7 +149,7 @@ func (u ScheduleUseCase) CreateSchedule(params *dto.CreateScheduleRequest) (*dto
 		}
 	}
 	// Updating
-	//cabinet
+	//cabinets
 	err = u.repoCabinet.DeleteCabinetTime((*cabinetTime)[0].CabinetId)
 	if err != nil {
 		return nil, err
@@ -268,7 +268,7 @@ func (u ScheduleUseCase) UpdateSchedule(params *dto.UpdateScheduleRequest) (*dto
 			return nil, err
 		}
 		// Updating
-		//cabinet
+		//cabinets
 		err = u.repoCabinet.DeleteCabinetTime((*cabinetTime)[0].CabinetId)
 		if err != nil {
 			return nil, err

@@ -1,7 +1,7 @@
-package cabinet
+package cabinets
 
 import (
-	"github.com/rinatkh/artstudio_back/internal/cabinet/models/core"
+	"github.com/rinatkh/artstudio_back/internal/cabinets/models/core"
 )
 
 type CabinetRepository interface {

@@ -42,9 +42,9 @@ import (
 	scheduleRepository "github.com/rinatkh/artstudio_back/internal/schedules/repository"
 	scheduleUsecase "github.com/rinatkh/artstudio_back/internal/schedules/usecase"
 
-	cabinetHTTP "github.com/rinatkh/artstudio_back/internal/cabinet/delivery/http"
-	cabinetRepository "github.com/rinatkh/artstudio_back/internal/cabinet/repository"
-	cabinetUsecase "github.com/rinatkh/artstudio_back/internal/cabinet/usecase"
+	cabinetHTTP "github.com/rinatkh/artstudio_back/internal/cabinets/delivery/http"
+	cabinetRepository "github.com/rinatkh/artstudio_back/internal/cabinets/repository"
+	cabinetUsecase "github.com/rinatkh/artstudio_back/internal/cabinets/usecase"
 
 	departmentSubjectsRepository "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/repository"
 	departmentSubjectsUsecase "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects/usecase"

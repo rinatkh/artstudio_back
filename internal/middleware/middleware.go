@@ -51,7 +51,7 @@ func (mw *MDWManager) VerifyAdminMiddleware() fiber.Handler {
 		if err != nil {
 			return err
 		}
-		if user.Role == consts.Admin {
+		if user.Role != consts.Admin {
 			return constants.ErrNoPrivileges
 		}
 		return ctx.Next()
