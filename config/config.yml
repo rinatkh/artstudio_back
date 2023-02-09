@@ -11,7 +11,7 @@ Postgres:
   port: '5432'
   user: 'postgres'
   password: 'postgres'
-  DBName: 'docker'
+  DBName: 'db'
   sslMode: 'disable'
   pgDriver: 'pgx'
 

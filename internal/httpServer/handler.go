@@ -74,7 +74,7 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	scheduleStudentRepo := scheduleRepository.NewPostgresRepository(postgreConnection, s.log)
 	cabinetRepo := cabinetRepository.NewPostgresRepository(postgreConnection, s.log)
 
-	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, subjectRepo, authRepo, statisticStudentRepo, statisticTeacherRepo, timeTeacherRepo, scheduleStudentRepo)
+	userUC := usersUsecase.NewUserUC(s.cfg, s.log, userRepo, statisticStudentRepo, statisticTeacherRepo)
 	authUC := authUsecase.NewAuthUC(s.cfg, s.log, authRepo, userUC)
 	oauthUC := oauthUsecase.NewOauthUC(s.cfg, s.log, userRepo)
 	timeTeacherUC := timeTeacherUsecase.NewSubjectUC(s.cfg, s.log, timeTeacherRepo, userUC)

@@ -142,10 +142,10 @@ func (u DepartmentUseCase) DeleteDepartment(params *dto.DeleteDepartmentRequest)
 	if check == nil {
 		return nil, constants.ErrDepartmentDBNotFound
 	}
-	_, err = u.departmentSubjectsUC.DeleteAll(&departmentSubjects.DeleteAllRequest{DepartmentId: params.Id})
-	if err != nil {
-		return nil, err
-	}
+	//_, err = u.departmentSubjectsUC.DeleteAll(&departmentSubjects.DeleteAllRequest{DepartmentId: params.Id})
+	//if err != nil {
+	//	return nil, err
+	//}
 	err = u.repoDepartment.DeleteDepartment(params.Id)
 	if err != nil {
 		return nil, err

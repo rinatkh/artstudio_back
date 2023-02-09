@@ -1,16 +1,12 @@
 package usecase
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
-	"github.com/rinatkh/artstudio_back/internal/auth"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
-	"github.com/rinatkh/artstudio_back/internal/schedules"
 	statisticStudent "github.com/rinatkh/artstudio_back/internal/statistic_students"
+	coreStatisticStudent "github.com/rinatkh/artstudio_back/internal/statistic_students/models/core"
 	statisticTeacher "github.com/rinatkh/artstudio_back/internal/statistic_teachers"
-	"github.com/rinatkh/artstudio_back/internal/subjects"
-	coreSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/core"
-	timeTeacher "github.com/rinatkh/artstudio_back/internal/time_teachers"
+	coreStatisticTeacher "github.com/rinatkh/artstudio_back/internal/statistic_teachers/models/core"
 	"github.com/rinatkh/artstudio_back/internal/users"
 	"github.com/rinatkh/artstudio_back/internal/users/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/users/models/core"
@@ -21,37 +17,20 @@ import (
 )
 
 type UserUseCase struct {
-	cfg                   *config.Config
-	log                   *logrus.Entry
-	repoUser              users.UserRepository
-	repoSubjects          subjects.SubjectRepository
-	repoAuth              auth.AuthRepository
-	repoStatisticStudents statisticStudent.StatisticStudentRepository
-	repoStatisticTeacher  statisticTeacher.StatisticTeacherRepository
-	repoTimeTeacher       timeTeacher.TimeTeacherRepository
-	repoSchedule          schedules.ScheduleRepository
+	cfg                  *config.Config
+	log                  *logrus.Entry
+	repoUser             users.UserRepository
+	repoStatisticStudent statisticStudent.StatisticStudentRepository
+	repoStatisticTeacher statisticTeacher.StatisticTeacherRepository
 }
 
-func NewUserUC(cfg *config.Config,
-	log *logrus.Entry,
-	repoUser users.UserRepository,
-	repoSubjects subjects.SubjectRepository,
-	repoAuth auth.AuthRepository,
-	repoStatisticStudents statisticStudent.StatisticStudentRepository,
-	repoStatisticTeacher statisticTeacher.StatisticTeacherRepository,
-	repoTimeTeacher timeTeacher.TimeTeacherRepository,
-	repoSchedule schedules.ScheduleRepository,
-) users.UseCase {
+func NewUserUC(cfg *config.Config, log *logrus.Entry, repoUser users.UserRepository, repoStatisticStudent statisticStudent.StatisticStudentRepository, repoStatisticTeacher statisticTeacher.StatisticTeacherRepository) users.UseCase {
 	return &UserUseCase{
-		cfg:                   cfg,
-		log:                   log,
-		repoUser:              repoUser,
-		repoSubjects:          repoSubjects,
-		repoAuth:              repoAuth,
-		repoStatisticStudents: repoStatisticStudents,
-		repoStatisticTeacher:  repoStatisticTeacher,
-		repoTimeTeacher:       repoTimeTeacher,
-		repoSchedule:          repoSchedule,
+		cfg:                  cfg,
+		log:                  log,
+		repoUser:             repoUser,
+		repoStatisticTeacher: repoStatisticTeacher,
+		repoStatisticStudent: repoStatisticStudent,
 	}
 }
 func (u UserUseCase) getRole(role string) string {
@@ -90,6 +69,17 @@ func (u UserUseCase) CreateUser(params *dto.CreateUserRequest) (*dto.CreateUserR
 	if err != nil {
 		return nil, err
 	}
+	if result.Role == consts.Student {
+		_, err = u.repoStatisticStudent.CreateStatisticStudent(&coreStatisticStudent.StatisticStudent{StudentId: result.Id})
+		if err != nil {
+			return nil, err
+		}
+	} else if result.Role == consts.Teacher {
+		_, err = u.repoStatisticTeacher.CreateStatisticTeacher(&coreStatisticTeacher.StatisticTeacher{TeacherId: result.Id})
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return &dto.CreateUserResponse{User: convert.User2DTO(result)}, nil
 }
@@ -126,6 +116,30 @@ func (u UserUseCase) UpdateUser(params *dto.UpdateUserRequest) (*dto.UpdateUserR
 	if err != nil {
 		return nil, err
 	}
+	if check.Role != result.Role {
+		if check.Role == consts.Student {
+			err = u.repoStatisticStudent.DeleteStatisticStudent(check.Id)
+			if err != nil {
+				return nil, err
+			}
+		} else if check.Role == consts.Teacher {
+			err = u.repoStatisticTeacher.DeleteStatisticTeacher(check.Id)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if result.Role == consts.Student {
+			_, err = u.repoStatisticStudent.CreateStatisticStudent(&coreStatisticStudent.StatisticStudent{StudentId: result.Id})
+			if err != nil {
+				return nil, err
+			}
+		} else if result.Role == consts.Teacher {
+			_, err = u.repoStatisticTeacher.CreateStatisticTeacher(&coreStatisticTeacher.StatisticTeacher{TeacherId: result.Id})
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	return &dto.UpdateUserResponse{User: convert.User2DTO(result)}, nil
 }
@@ -147,50 +161,6 @@ func (u UserUseCase) DeleteUser(params *dto.DeleteUserRequest) (*dto.DeleteUserR
 	}
 	if check == nil {
 		return nil, constants.ErrUserDBNotFound
-	}
-	var list *[]coreSubject.Subject
-	if check.Role == consts.Teacher {
-		_, length, err := u.repoSubjects.GetSubjects(1, 0, check.Id)
-		if err != nil {
-			return nil, constants.NewCodedError("conflict to delete subjects of teacher", fiber.StatusConflict)
-		}
-		list, _, err = u.repoSubjects.GetSubjects(length, 0, check.Id)
-		if err != nil {
-			return nil, constants.NewCodedError("conflict to delete subjects of teacher", fiber.StatusConflict)
-		}
-	}
-	if list != nil {
-		for _, i := range *list {
-			err = u.repoSchedule.DeleteScheduleBySubjectId(i.Id)
-			if err != nil {
-				return nil, err
-			}
-			err := u.repoSubjects.DeleteSubject(i.Id)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-	err = u.repoAuth.DeleteUser(params.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	err = u.repoStatisticStudents.DeleteStatisticStudent(params.Id)
-	if err != nil {
-		return nil, err
-	}
-	err = u.repoStatisticTeacher.DeleteStatisticTeacher(params.Id)
-	if err != nil {
-		return nil, err
-	}
-	err = u.repoTimeTeacher.DeleteTimeTeacherByUserId(params.Id)
-	if err != nil {
-		return nil, err
-	}
-	err = u.repoSchedule.DeleteScheduleByStudentId(params.Id)
-	if err != nil {
-		return nil, err
 	}
 	err = u.repoUser.DeleteUser(params.Id)
 	if err != nil {
