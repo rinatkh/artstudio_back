@@ -5,7 +5,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
 	departmentSubjects "github.com/rinatkh/artstudio_back/internal/DepartmentSubjects"
-	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/departments"
 	"github.com/rinatkh/artstudio_back/internal/departments/models/convert"
 	"github.com/rinatkh/artstudio_back/internal/departments/models/core"
@@ -13,7 +12,6 @@ import (
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	dtoSubject "github.com/rinatkh/artstudio_back/internal/subjects/models/dto"
 	"github.com/rinatkh/artstudio_back/internal/users"
-	dtoUser "github.com/rinatkh/artstudio_back/internal/users/models/dto"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
 )
@@ -37,16 +35,6 @@ func NewDepartmentUC(cfg *config.Config, log *logrus.Entry, repoDepartment depar
 		userUC:               userUC,
 	}
 }
-func (u DepartmentUseCase) checkAdmin(admin string) error {
-	user, err := u.userUC.GetUser(&dtoUser.GetUserRequest{Id: admin})
-	if err != nil {
-		return constants.ErrNoPrivileges
-	}
-	if user.Role != consts.Admin {
-		return constants.ErrNoPrivileges
-	}
-	return nil
-}
 
 func (u DepartmentUseCase) getSubjects(subjectIDs *[]departmentSubjects.DepartmentSubjects) (*[]dtoSubject.Subject, error) {
 	var elems []dtoSubject.Subject
@@ -61,10 +49,6 @@ func (u DepartmentUseCase) getSubjects(subjectIDs *[]departmentSubjects.Departme
 }
 
 func (u DepartmentUseCase) CreateDepartment(params *dto.CreateDepartmentRequest) (*dto.CreateDepartmentResponse, error) {
-	err := u.checkAdmin(params.UserId)
-	if err != nil {
-		return nil, err
-	}
 	var elems []dtoSubject.Subject
 	for _, i := range params.SubjectIDs {
 		subject, err := u.subjectUC.GetSubject(&dtoSubject.GetSubjectRequest{
@@ -97,10 +81,6 @@ func (u DepartmentUseCase) CreateDepartment(params *dto.CreateDepartmentRequest)
 }
 
 func (u DepartmentUseCase) UpdateDepartment(params *dto.UpdateDepartmentRequest) (*dto.UpdateDepartmentResponse, error) {
-	err := u.checkAdmin(params.UserId)
-	if err != nil {
-		return nil, err
-	}
 	check, err := u.repoDepartment.GetDepartmentById(params.Id)
 	if err != nil {
 		return nil, err
@@ -131,10 +111,6 @@ func (u DepartmentUseCase) UpdateDepartment(params *dto.UpdateDepartmentRequest)
 }
 
 func (u DepartmentUseCase) DeleteDepartment(params *dto.DeleteDepartmentRequest) (*dto.DeleteDepartmentResponse, error) {
-	err := u.checkAdmin(params.UserId)
-	if err != nil {
-		return nil, err
-	}
 	check, err := u.repoDepartment.GetDepartmentById(params.Id)
 	if err != nil {
 		return nil, err
@@ -205,11 +181,7 @@ func (u DepartmentUseCase) GetDepartments(params *dto.GetDepartmentsRequest) (*d
 }
 
 func (u DepartmentUseCase) AddSubjDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error) {
-	err := u.checkAdmin(params.UserId)
-	if err != nil {
-		return nil, err
-	}
-	_, err = u.departmentSubjectsUC.AddDepartmentSubjects(&departmentSubjects.AddDepartmentSubjectsRequest{
+	_, err := u.departmentSubjectsUC.AddDepartmentSubjects(&departmentSubjects.AddDepartmentSubjectsRequest{
 		DepartmentId: params.Id,
 		SubjectId:    params.SubjectId,
 	})
@@ -228,11 +200,7 @@ func (u DepartmentUseCase) AddSubjDepartment(params *dto.UpdateDepartmentSubject
 }
 
 func (u DepartmentUseCase) DelSubDepartment(params *dto.UpdateDepartmentSubjectRequest) (*dto.UpdateDepartmentSubjectResponse, error) {
-	err := u.checkAdmin(params.UserId)
-	if err != nil {
-		return nil, err
-	}
-	_, err = u.departmentSubjectsUC.DeleteDepartmentSubjects(&departmentSubjects.DeleteDepartmentSubjectsRequest{
+	_, err := u.departmentSubjectsUC.DeleteDepartmentSubjects(&departmentSubjects.DeleteDepartmentSubjectsRequest{
 		DepartmentId: params.Id,
 		SubjectId:    params.SubjectId,
 	})

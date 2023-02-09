@@ -1,15 +1,18 @@
 package dto
 
-import "github.com/rinatkh/artstudio_back/internal/users/models/dto"
+import (
+	dtoCabinet "github.com/rinatkh/artstudio_back/internal/cabinets/models/dto"
+	"github.com/rinatkh/artstudio_back/internal/users/models/dto"
+)
 
 // Subject Only for Responses
 type Subject struct {
-	Id          int64    `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description,omitempty"`
-	CabinetId   int64    `json:"cabinet_id,omitempty"`
-	Image       string   `json:"image"`
-	Teacher     dto.User `json:"teacher"`
+	Id          int64                         `json:"id"`
+	Name        string                        `json:"name"`
+	Description string                        `json:"description,omitempty"`
+	Cabinet     dtoCabinet.CabinetWithoutTime `json:"cabinet,omitempty"`
+	Image       string                        `json:"image"`
+	Teacher     dto.User                      `json:"teacher"`
 }
 
 type BasicResponse struct{}

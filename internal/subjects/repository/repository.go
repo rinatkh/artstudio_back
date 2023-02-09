@@ -69,7 +69,7 @@ func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (
 }
 
 func (p postgresRepository) CreateSubject(subject *core.Subject) (*core.Subject, error) {
-	res, err := p.db.Query("INSERT INTO subjects (name, cabinet_id, image, description, teacher_id) VALUES ($1, $2, $3, $4)", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId)
+	res, err := p.db.Query("INSERT INTO subjects (name, cabinet_id, image, description, teacher_id) VALUES ($1, $2, $3, $4, $5)", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId)
 	if res != nil {
 		_ = res.Close()
 	}

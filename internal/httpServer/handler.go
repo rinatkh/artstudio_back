@@ -81,11 +81,11 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	statisticTeacherUC := statisticTeacherUsecase.NewStatisticTeacherUC(s.cfg, s.log, statisticTeacherRepo, userUC)
 	statisticStudentUC := statisticStudentUsecase.NewStatisticStudentUC(s.cfg, s.log, statisticStudentRepo, userUC)
 	staticUC := staticUsecase.NewStaticUC(s.cfg, s.log)
-	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC)
+	cabinetUC := cabinetUsecase.NewCabinetUC(s.cfg, s.log, cabinetRepo, userUC)
+	subjectUC := subjectUsecase.NewSubjectUC(s.cfg, s.log, subjectRepo, userUC, cabinetUC)
 	departmentSubjectsUC := departmentSubjectsUsecase.NewDepartmentSubjectsUC(s.cfg, s.log, departmentSubjectsRepo, subjectUC, departmentRepo)
 	departmentUC := departmentUsecase.NewDepartmentUC(s.cfg, s.log, departmentRepo, subjectUC, departmentSubjectsUC, userUC)
 	scheduleUC := scheduleUsecase.NewScheduleUC(s.cfg, s.log, scheduleStudentRepo, userUC, subjectUC, timeTeacherRepo, cabinetRepo)
-	cabinetUC := cabinetUsecase.NewCabinetUC(s.cfg, s.log, cabinetRepo, userUC)
 
 	authHandler := authHTTP.NewAuthHandler(authUC, s.log, s.cfg)
 	oauthHandler := oauthHTTP.NewOauthHandler(oauthUC, s.log, s.cfg)

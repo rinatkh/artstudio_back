@@ -3,6 +3,8 @@ package usecase
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rinatkh/artstudio_back/config"
+	"github.com/rinatkh/artstudio_back/internal/cabinets"
+	dtoCabinet "github.com/rinatkh/artstudio_back/internal/cabinets/models/dto"
 	consts "github.com/rinatkh/artstudio_back/internal/constants"
 	"github.com/rinatkh/artstudio_back/internal/subjects"
 	"github.com/rinatkh/artstudio_back/internal/subjects/models/convert"
@@ -19,14 +21,16 @@ type SubjectUseCase struct {
 	log         *logrus.Entry
 	repoSubject subjects.SubjectRepository
 	userUC      users.UseCase
+	cabinetUC   cabinets.UseCase
 }
 
-func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.SubjectRepository, userUC users.UseCase) subjects.UseCase {
+func NewSubjectUC(cfg *config.Config, log *logrus.Entry, repoSubject subjects.SubjectRepository, userUC users.UseCase, cabinetUC cabinets.UseCase) subjects.UseCase {
 	return &SubjectUseCase{
 		cfg:         cfg,
 		log:         log,
 		repoSubject: repoSubject,
 		userUC:      userUC,
+		cabinetUC:   cabinetUC,
 	}
 }
 
@@ -47,7 +51,7 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 		if err != nil {
 			return nil, err
 		}
-		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
+		if user.Role != consts.Admin {
 			return nil, constants.ErrNoPrivileges
 		}
 		subject.TeacherId = params.TeacherId
@@ -62,12 +66,16 @@ func (u SubjectUseCase) CreateSubject(params *dtoSubject.CreateSubjectRequest) (
 		subject.TeacherId = params.UserId
 		tutor = user.User
 	}
+	cabinet, err := u.cabinetUC.GetCabinet(&dtoCabinet.GetCabinetRequest{CabinetId: subject.CabinetId})
+	if err != nil {
+		return nil, err
+	}
 	result, err := u.repoSubject.CreateSubject(&subject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dtoSubject.CreateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor)}, nil
+	return &dtoSubject.CreateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor, &cabinet.Cabinet)}, nil
 }
 
 func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (*dtoSubject.UpdateSubjectResponse, error) {
@@ -95,7 +103,7 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 		if err != nil {
 			return nil, err
 		}
-		if user.Role != consts.Admin || teacher.Role != consts.Teacher {
+		if user.Role != consts.Admin {
 			return nil, constants.ErrNoPrivileges
 		}
 		subject.TeacherId = params.TeacherId
@@ -110,13 +118,16 @@ func (u SubjectUseCase) UpdateSubject(params *dtoSubject.UpdateSubjectRequest) (
 		subject.TeacherId = params.UserId
 		tutor = user.User
 	}
-
+	cabinet, err := u.cabinetUC.GetCabinet(&dtoCabinet.GetCabinetRequest{CabinetId: subject.CabinetId})
+	if err != nil {
+		return nil, err
+	}
 	result, err := u.repoSubject.UpdateSubject(&subject)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dtoSubject.UpdateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor)}, nil
+	return &dtoSubject.UpdateSubjectResponse{Subject: convert.Subject2DTO(result, &tutor, &cabinet.Cabinet)}, nil
 }
 
 func (u SubjectUseCase) DeleteSubject(params *dtoSubject.DeleteSubjectRequest) (*dtoSubject.DeleteSubjectResponse, error) {
@@ -156,7 +167,11 @@ func (u SubjectUseCase) GetSubject(params *dtoSubject.GetSubjectRequest) (*dtoSu
 	if err != nil {
 		return nil, err
 	}
-	return &dtoSubject.GetSubjectResponse{Subject: convert.Subject2DTO(result, &teacher.User)}, nil
+	cabinet, err := u.cabinetUC.GetCabinet(&dtoCabinet.GetCabinetRequest{CabinetId: result.CabinetId})
+	if err != nil {
+		return nil, err
+	}
+	return &dtoSubject.GetSubjectResponse{Subject: convert.Subject2DTO(result, &teacher.User, &cabinet.Cabinet)}, nil
 }
 
 func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dtoSubject.GetSubjectsResponse, error) {
@@ -184,7 +199,11 @@ func (u SubjectUseCase) GetSubjects(params *dtoSubject.GetSubjectsRequest) (*dto
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, convert.Subject2DTO(&i, &teacher.User))
+		cabinet, err := u.cabinetUC.GetCabinet(&dtoCabinet.GetCabinetRequest{CabinetId: i.CabinetId})
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, convert.Subject2DTO(&i, &teacher.User, &cabinet.Cabinet))
 	}
 	return &dtoSubject.GetSubjectsResponse{Subjects: result, Length: length}, nil
 }

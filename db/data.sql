@@ -33,6 +33,7 @@ create table public.cabinets
     id   bigserial primary key not null,
     name text
 );
+INSERT INTO public.cabinets(id, name) VALUES (0, 'Любой кабинет');
 
 alter table cabinets
     owner to postgres;

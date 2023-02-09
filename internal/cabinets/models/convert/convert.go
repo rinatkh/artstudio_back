@@ -22,3 +22,10 @@ func ConvertCabinet2DTO(param *core.Cabinet, paramTime *[]core.CabinetTime) dto.
 	}
 	return res
 }
+
+func ConvertCabinet2DTOWithoutTime(param *dto.Cabinet) dto.CabinetWithoutTime {
+	return dto.CabinetWithoutTime{
+		CabinetId: param.CabinetId,
+		Name:      param.Name,
+	}
+}

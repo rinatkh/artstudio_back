@@ -85,13 +85,13 @@ func (u ScheduleUseCase) CreateSchedule(params *dto.CreateScheduleRequest) (*dto
 		return nil, constants.NewCodedError(fmt.Sprintf("User %s is not student", params.StudentId), fiber.StatusConflict)
 	}
 	var cabinetTime *[]coreCabinet.CabinetTime
-	if subject.CabinetId == 0 {
+	if subject.Cabinet.CabinetId == 0 {
 		cabinetTime, err = u.repoCabinet.GetAllCabinetTimes(params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.CabinetId, params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
+		cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.Cabinet.CabinetId, params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 		if err != nil {
 			return nil, err
 		}
@@ -240,7 +240,7 @@ func (u ScheduleUseCase) UpdateSchedule(params *dto.UpdateScheduleRequest) (*dto
 	cabinetId := params.CabinetId
 	if schedule.WhenTime != params.WhenTime {
 		var cabinetTime *[]coreCabinet.CabinetTime
-		if subject.CabinetId == 0 {
+		if subject.Cabinet.CabinetId == 0 {
 			if params.CabinetId == 0 {
 				cabinetTime, err = u.repoCabinet.GetAllCabinetTimes(params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 				if err != nil {
@@ -253,7 +253,7 @@ func (u ScheduleUseCase) UpdateSchedule(params *dto.UpdateScheduleRequest) (*dto
 				}
 			}
 		} else {
-			cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.CabinetId, params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
+			cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.Cabinet.CabinetId, params.WhenTime, time.Unix(params.WhenTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 			if err != nil {
 				return nil, err
 			}
@@ -408,7 +408,7 @@ func (u ScheduleUseCase) GetSchedule(params *dto.GetScheduleRequest) (*dto.GetSc
 	if err != nil {
 		return nil, err
 	}
-	cab, err := u.repoCabinet.GetCabinetById(subject.CabinetId)
+	cab, err := u.repoCabinet.GetCabinetById(subject.Cabinet.CabinetId)
 	if err != nil {
 		return nil, err
 	}
@@ -440,7 +440,7 @@ func (u ScheduleUseCase) GetStudentSchedules(params *dto.GetStudentSchedulesRequ
 		if err != nil {
 			return nil, err
 		}
-		cab, err := u.repoCabinet.GetCabinetById(subject.CabinetId)
+		cab, err := u.repoCabinet.GetCabinetById(subject.Cabinet.CabinetId)
 		if err != nil {
 			return nil, err
 		}
@@ -477,7 +477,7 @@ func (u ScheduleUseCase) GetTeacherSchedules(params *dto.GetTeacherSchedulesRequ
 		if err != nil {
 			return nil, err
 		}
-		cab, err := u.repoCabinet.GetCabinetById(subject.CabinetId)
+		cab, err := u.repoCabinet.GetCabinetById(subject.Cabinet.CabinetId)
 		if err != nil {
 			return nil, err
 		}
@@ -500,13 +500,13 @@ func (u ScheduleUseCase) GetSlotsSchedules(params *dto.GetSlotsRequest) (*dto.Ge
 		return nil, err
 	}
 	var cabinetTime *[]coreCabinet.CabinetTime
-	if subject.CabinetId == 0 {
+	if subject.Cabinet.CabinetId == 0 {
 		cabinetTime, err = u.repoCabinet.GetAllCabinetTimes(params.StartTime, params.FinishTime)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.CabinetId, params.StartTime, params.FinishTime)
+		cabinetTime, err = u.repoCabinet.GetCabinetTimes(subject.Cabinet.CabinetId, params.StartTime, params.FinishTime)
 		if err != nil {
 			return nil, err
 		}

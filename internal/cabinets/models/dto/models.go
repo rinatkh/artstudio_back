@@ -1,5 +1,11 @@
 package dto
 
+// only for different modules
+type CabinetWithoutTime struct {
+	CabinetId int64  `json:"cabinet_id"`
+	Name      string `json:"name"`
+}
+
 // Cabinet Only for Responses
 type Cabinet struct {
 	CabinetId int64  `json:"cabinet_id"`
