@@ -41,7 +41,7 @@ func (p postgresRepository) checkTimeTeachers(teacherId string, startTime, finis
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)
+		return nil, constants.ErrTimeNotFree
 	}
 	return &data, nil
 }
@@ -59,7 +59,7 @@ func (p postgresRepository) GetTimeTeacherById(id int64) (*core.TimeTeacher, err
 }
 
 func (p postgresRepository) CreateTimeTeacher(timeTeacher *core.TimeTeacher) (*core.TimeTeacher, error) {
-	if _, err := p.checkTimeTeachers(timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime); !errors.Is(err, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)) {
+	if _, err := p.checkTimeTeachers(timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime); !errors.Is(err, constants.ErrTimeNotFree) {
 		return nil, constants.NewCodedError("teacher already have this time for schedules", fiber.StatusConflict)
 	}
 	res, err := p.db.Query("INSERT INTO time_teachers (teacher_id, start_time, finish_time) VALUES ($1, $2, $3)", timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime)
@@ -80,13 +80,13 @@ func (p postgresRepository) checkTimeTeachersForUpdate(teacherId string, startTi
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)
+		return nil, constants.ErrTimeNotFree
 	}
 	return &data, nil
 }
 
 func (p postgresRepository) UpdateTimeTeacher(timeTeacher *core.TimeTeacher) (*core.TimeTeacher, error) {
-	if _, err := p.checkTimeTeachersForUpdate(timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime, timeTeacher.Id); !errors.Is(err, constants.NewCodedError("teacher not free at this time", fiber.StatusConflict)) {
+	if _, err := p.checkTimeTeachersForUpdate(timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime, timeTeacher.Id); !errors.Is(err, constants.ErrTimeNotFree) {
 		return nil, constants.NewCodedError("teacher already have this time for schedules", fiber.StatusConflict)
 	}
 	query := fmt.Sprintf("UPDATE time_teachers SET teacher_id='%s', start_time=$1, finish_time=$2 where id='%d'", timeTeacher.TeacherId, timeTeacher.Id)

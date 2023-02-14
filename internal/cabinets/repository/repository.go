@@ -9,7 +9,6 @@ import (
 	"github.com/rinatkh/artstudio_back/internal/cabinets/models/core"
 	"github.com/rinatkh/artstudio_back/pkg/constants"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type postgresRepository struct {
@@ -38,7 +37,7 @@ func (p postgresRepository) GetCabinetById(id int64) (*core.Cabinet, error) {
 
 func (p postgresRepository) GetCabinetTimesBySubjectId(subjectId int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE subject_id='%d'", subjectId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE subject_id='%d' ORDER BY start_time", subjectId))
 	if err != nil {
 		return nil, err
 	}
@@ -74,15 +73,88 @@ func (p postgresRepository) GetCabinetTimesByCabinetId(cabinetId int64) (*[]core
 
 func (p postgresRepository) GetAllCabinetTimes(startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE FROM_UNIXTIME(start_time) >= $1 AND  FROM_UNIXTIME(finish_time) <= $2 ORDER BY start_time"), time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE start_time >= $1 AND  finish_time <= $2 ORDER BY start_time"), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
-	if len(data) == 0 {
+	return p.transformFromTakenTimeToFreeTime(startTime, finishTime, &data)
+}
+
+func (p postgresRepository) transformFromTakenTimeToFreeTime(startTime, finishTime int64, times *[]core.CabinetTime) (*[]core.CabinetTime, error) {
+	var result []core.CabinetTime
+	if times == nil {
+		result = []core.CabinetTime{{
+			StartTime:  startTime,
+			FinishTime: finishTime,
+		}}
+		return &result, nil
+	}
+	count, err := p.GetCountCabinets()
+	if err != nil {
+		return nil, err
+	}
+	var buildTimeTemp []core.CabinetTime
+	var point int
+	var isCabinetChange bool
+	for i := int64(1); i <= count; i++ {
+		isCabinetChange = true
+		for j := 0; j < len(*times)-1; j++ {
+			if (*times)[j].StartTime < startTime && (*times)[j].FinishTime > startTime && (*times)[j].CabinetId == i {
+				(*times)[j].StartTime = startTime
+			}
+			if (*times)[j].StartTime < finishTime && (*times)[j].FinishTime > finishTime && (*times)[j].CabinetId == i {
+				(*times)[j].FinishTime = finishTime
+			}
+			if (*times)[j].StartTime >= startTime && (*times)[j].FinishTime <= finishTime && (*times)[j].CabinetId == i {
+				if isCabinetChange {
+					isCabinetChange = false
+					buildTimeTemp = append(buildTimeTemp, (*times)[j])
+				}
+				if (*times)[j].FinishTime == (*times)[j+1].StartTime {
+					buildTimeTemp[point].FinishTime = (*times)[j+1].FinishTime
+				} else {
+					point += 1
+					buildTimeTemp = append(buildTimeTemp, (*times)[j+1])
+				}
+			}
+		}
+	}
+	for i := int64(1); i <= count; i++ {
+		isCabinetChange = true
+		for j := 0; j < len(buildTimeTemp)-1; j++ {
+			if buildTimeTemp[j].CabinetId == i {
+				if isCabinetChange {
+					isCabinetChange = false
+					if buildTimeTemp[j].StartTime != startTime {
+						result = append(result, core.CabinetTime{
+							StartTime:  startTime,
+							FinishTime: buildTimeTemp[j].StartTime,
+						})
+					}
+				}
+				if j == len(buildTimeTemp)-2 || buildTimeTemp[j+1].CabinetId != buildTimeTemp[j+2].CabinetId {
+					if buildTimeTemp[j+1].FinishTime != finishTime {
+						result = append(result, core.CabinetTime{
+							StartTime:  buildTimeTemp[j+1].StartTime,
+							FinishTime: finishTime,
+						})
+					}
+					continue
+				}
+				result = append(result, core.CabinetTime{
+					StartTime:  buildTimeTemp[j].FinishTime,
+					FinishTime: buildTimeTemp[j+1].StartTime,
+				})
+
+			}
+		}
+	}
+	if len(result) == 0 {
 		return nil, constants.ErrCabinetTimeDBNotFound
 	}
-	return &data, nil
+	return &result, nil
 }
+
 func (p postgresRepository) GetCountCabinets() (int64, error) {
 	var data []int64
 	err := p.db.Select(&data, "SELECT count(*) FROM cabinetTimes")
@@ -94,18 +166,15 @@ func (p postgresRepository) GetCountCabinets() (int64, error) {
 
 func (p postgresRepository) GetCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND FROM_UNIXTIME(start_time) >= $2 AND FROM_UNIXTIME(finish_time) <= $3"), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND start_time >= $2 AND finish_time <= $3"), cabinetId, startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
-	if len(data) == 0 {
-		return nil, constants.ErrCabinetTimeDBNotFound
-	}
-	return &data, nil
+	return p.transformFromTakenTimeToFreeTime(startTime, finishTime, &data)
 }
 func (p postgresRepository) checkCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND (FROM_UNIXTIME(start_time) >= $2 AND FROM_UNIXTIME(start_time) <= $3) OR (FROM_UNIXTIME(finish_time) >= $2 AND FROM_UNIXTIME(finish_time) <= $3) "), cabinetId, time.Unix(startTime, 0), time.Unix(finishTime, 0))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND (start_time >= $2 AND start_time <= $3) OR (finish_time >= $2 AND finish_time <= $3) "), cabinetId, startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}

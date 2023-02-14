@@ -50,4 +50,6 @@ var (
 	ErrEmailAlreadyTaken = &CodedError{errors.New("email is taken already by other user"), fiber.StatusConflict}
 	ErrPasswordMismatch  = &CodedError{errors.New("password mismatch"), fiber.StatusUnauthorized}
 	ErrTimeNot15         = &CodedError{errors.New("time isn't 15 min devide"), fiber.StatusUnauthorized}
+
+	ErrTimeNotFree = &CodedError{errors.New("teacher not free at this time"), fiber.StatusConflict}
 )

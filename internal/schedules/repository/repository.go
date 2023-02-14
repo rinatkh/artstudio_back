@@ -37,9 +37,9 @@ func (p postgresRepository) GetScheduleById(id int64) (*core.Schedule, error) {
 
 func (p postgresRepository) GetTeacherSchedules(teacherId string, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id in (SELECT id FROM subjects WHERE teacher_id = %s) AND FROM_UNIXTIME(when_time) >= $1 AND  FROM_UNIXTIME(when_time) <= $2", teacherId)
+	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id in (SELECT id FROM subjects WHERE teacher_id = %s) AND when_time >= $1 AND  when_time <= $2", teacherId)
 	err := p.db.Select(
-		&data, queryStr, time.Unix(startTime, 0), time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration))
+		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
 	if err != nil {
 		return nil, err
@@ -52,9 +52,9 @@ func (p postgresRepository) GetTeacherSchedules(teacherId string, startTime, fin
 
 func (p postgresRepository) GetStudentSchedules(studentId string, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE student_id = %s AND FROM_UNIXTIME(when_time) >= $1 AND  FROM_UNIXTIME(when_time) <= $2", studentId)
+	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE student_id = %s AND when_time >= $1 AND  when_time <= $2", studentId)
 	err := p.db.Select(
-		&data, queryStr, time.Unix(startTime, 0), time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration))
+		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
 	if err != nil {
 		return nil, err
@@ -67,9 +67,9 @@ func (p postgresRepository) GetStudentSchedules(studentId string, startTime, fin
 
 func (p postgresRepository) GetSchedules(startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE FROM_UNIXTIME(when_time) >= $1 AND  FROM_UNIXTIME(when_time) <= $2")
+	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE when_time >= $1 AND  when_time <= $2")
 	err := p.db.Select(
-		&data, queryStr, time.Unix(startTime, 0), time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration))
+		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
 	if err != nil {
 		return nil, err
@@ -82,9 +82,9 @@ func (p postgresRepository) GetSchedules(startTime, finishTime int64) (*[]core.S
 
 func (p postgresRepository) GetSubjectSchedules(subjectId int64, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id  = %d AND FROM_UNIXTIME(when_time) >= $1 AND  FROM_UNIXTIME(when_time) <= $2", subjectId)
+	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id  = %d AND when_time >= $1 AND  when_time <= $2", subjectId)
 	err := p.db.Select(
-		&data, queryStr, time.Unix(startTime, 0), time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration))
+		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
 	if err != nil {
 		return nil, err
