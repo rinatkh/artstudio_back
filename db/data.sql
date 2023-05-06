@@ -20,6 +20,7 @@ create table public.auth
     email         text primary key not NULL,
     password_hash text             NOT NULL,
     password_salt text             not null,
+    is_confirmed  boolean          not null default false,
     foreign key (uuid) REFERENCES users (uuid)
         on delete cascade
         on update no action
@@ -33,7 +34,8 @@ create table public.cabinets
     id   bigserial primary key not null,
     name text
 );
-INSERT INTO public.cabinets(id, name) VALUES (0, 'Любой кабинет');
+INSERT INTO public.cabinets(id, name)
+VALUES (0, 'Любой кабинет');
 
 alter table cabinets
     owner to postgres;

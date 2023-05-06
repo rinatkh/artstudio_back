@@ -23,7 +23,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) statisticStudent.Stat
 
 func (p postgresRepository) GetStatisticStudentById(id string) (*core.StatisticStudent, error) {
 	var data []core.StatisticStudent
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM statistic_students WHERE student_id='%s'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.statistic_students WHERE student_id='%s'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (p postgresRepository) GetStatisticStudentById(id string) (*core.StatisticS
 }
 
 func (p postgresRepository) CreateStatisticStudent(statisticStudent *core.StatisticStudent) (*core.StatisticStudent, error) {
-	res, err := p.db.Query("INSERT INTO statistic_students (student_id) VALUES ($1)", statisticStudent.StudentId)
+	res, err := p.db.Query("INSERT INTO public.statistic_students (student_id) VALUES ($1)", statisticStudent.StudentId)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -58,7 +58,7 @@ func (p postgresRepository) UpdateStatisticStudent(statisticStudent *core.Statis
 }
 
 func (p postgresRepository) DeleteStatisticStudent(id string) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM statistic_students WHERE student_id='%s'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.statistic_students WHERE student_id='%s'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -68,7 +68,7 @@ func (p postgresRepository) DeleteStatisticStudent(id string) error {
 
 func (p postgresRepository) getStatisticStudent(statisticStudent *core.StatisticStudent) (*core.StatisticStudent, error) {
 	var data []core.StatisticStudent
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM statistic_students WHERE student_id='%s'", statisticStudent.StudentId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.statistic_students WHERE student_id='%s'", statisticStudent.StudentId))
 	if err != nil {
 		return nil, err
 	}

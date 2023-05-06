@@ -23,7 +23,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) subjects.SubjectRepos
 
 func (p postgresRepository) GetSubjectById(id int64) (*core.Subject, error) {
 	var data []core.Subject
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM subjects WHERE id='%d'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.subjects WHERE id='%d'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (p postgresRepository) GetSubjectById(id int64) (*core.Subject, error) {
 
 func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (*[]core.Subject, int64, error) {
 	var data []core.Subject
-	queryStr := "SELECT * FROM subjects WHERE id > 0"
+	queryStr := "SELECT * FROM public.subjects WHERE id > 0"
 
 	if teacherId != "" {
 		queryStr += fmt.Sprintf(" AND teacher_id='%s'", teacherId)
@@ -57,7 +57,7 @@ func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (
 		return nil, 0, nil
 	}
 	var length []int64
-	q := "SELECT count(*) FROM subjects"
+	q := "SELECT count(*) FROM public.subjects"
 	if teacherId != "" {
 		q += fmt.Sprintf(" WHERE teacher_id='%s'", teacherId)
 	}
@@ -69,7 +69,7 @@ func (p postgresRepository) GetSubjects(limit, offset int64, teacherId string) (
 }
 
 func (p postgresRepository) CreateSubject(subject *core.Subject) (*core.Subject, error) {
-	res, err := p.db.Query("INSERT INTO subjects (name, cabinet_id, image, description, teacher_id) VALUES ($1, $2, $3, $4, $5)", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId)
+	res, err := p.db.Query("INSERT INTO public.subjects (name, cabinet_id, image, description, teacher_id) VALUES ($1, $2, $3, $4, $5)", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -93,7 +93,7 @@ func (p postgresRepository) UpdateSubject(subject *core.Subject) (*core.Subject,
 }
 
 func (p postgresRepository) DeleteSubject(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM subjects WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.subjects WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -103,7 +103,7 @@ func (p postgresRepository) DeleteSubject(id int64) error {
 
 func (p postgresRepository) getSubject(subject *core.Subject) (*core.Subject, error) {
 	var data []core.Subject
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM subjects WHERE name='%s' AND cabinet_id='%d' AND image='%s' and description='%s' and teacher_id='%s'", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.subjects WHERE name='%s' AND cabinet_id='%d' AND image='%s' and description='%s' and teacher_id='%s'", subject.Name, subject.CabinetId, subject.Image, subject.Description, subject.TeacherId))
 	if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) timeTeacher.TimeTeach
 }
 func (p postgresRepository) GetTimeTeachers(teacherId string, startTime, finishTime int64) (*[]core.TimeTeacher, error) {
 	var data []core.TimeTeacher
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE teacher_id='%s' AND start_time >= $1 and finish_time <= $2", teacherId), startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.time_teachers WHERE teacher_id='%s' AND start_time <= $1 and finish_time >= $2", teacherId), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (p postgresRepository) GetTimeTeachers(teacherId string, startTime, finishT
 
 func (p postgresRepository) checkTimeTeachers(teacherId string, startTime, finishTime int64) (*[]core.TimeTeacher, error) {
 	var data []core.TimeTeacher
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE teacher_id='%s' AND (start_time >= $1 and start_time <= $2) or (finish_time >= $1 and finish_time <= $2)", teacherId), startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.time_teachers WHERE teacher_id='%s' AND (start_time >= $1 and start_time <= $2) or (finish_time >= $1 and finish_time <= $2)", teacherId), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func (p postgresRepository) checkTimeTeachers(teacherId string, startTime, finis
 
 func (p postgresRepository) GetTimeTeacherById(id int64) (*core.TimeTeacher, error) {
 	var data []core.TimeTeacher
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE id='%d'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.time_teachers WHERE id='%d'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (p postgresRepository) CreateTimeTeacher(timeTeacher *core.TimeTeacher) (*c
 	if _, err := p.checkTimeTeachers(timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime); !errors.Is(err, constants.ErrTimeNotFree) {
 		return nil, constants.NewCodedError("teacher already have this time for schedules", fiber.StatusConflict)
 	}
-	res, err := p.db.Query("INSERT INTO time_teachers (teacher_id, start_time, finish_time) VALUES ($1, $2, $3)", timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime)
+	res, err := p.db.Query("INSERT INTO public.time_teachers (teacher_id, start_time, finish_time) VALUES ($1, $2, $3)", timeTeacher.TeacherId, timeTeacher.StartTime, timeTeacher.FinishTime)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -75,7 +75,7 @@ func (p postgresRepository) CreateTimeTeacher(timeTeacher *core.TimeTeacher) (*c
 
 func (p postgresRepository) checkTimeTeachersForUpdate(teacherId string, startTime, finishTime, id int64) (*[]core.TimeTeacher, error) {
 	var data []core.TimeTeacher
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE teacher_id='%s' AND id <> '%d' AND (start_time >= $1 and start_time <= $2) or (finish_time >= $1 and finish_time <= $2)", teacherId, id), startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.time_teachers WHERE teacher_id='%s' AND id <> '%d' AND (start_time >= $1 and start_time <= $2) or (finish_time >= $1 and finish_time <= $2)", teacherId, id), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (p postgresRepository) UpdateTimeTeacher(timeTeacher *core.TimeTeacher) (*c
 }
 
 func (p postgresRepository) DeleteTimeTeacher(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM time_teachers WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.time_teachers WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -110,7 +110,7 @@ func (p postgresRepository) DeleteTimeTeacher(id int64) error {
 }
 
 func (p postgresRepository) DeleteTimeTeacherByUserId(id string) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM time_teachers WHERE teacher_id='%s'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.time_teachers WHERE teacher_id='%s'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -120,7 +120,7 @@ func (p postgresRepository) DeleteTimeTeacherByUserId(id string) error {
 
 func (p postgresRepository) getTimeTeacher(timeTeacher *core.TimeTeacher) (*core.TimeTeacher, error) {
 	var data []core.TimeTeacher
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM time_teachers WHERE teacher_id='%s' AND start_time=$1 and finish_time=$2", timeTeacher.TeacherId), timeTeacher.StartTime, timeTeacher.FinishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.time_teachers WHERE teacher_id='%s' AND start_time=$1 and finish_time=$2", timeTeacher.TeacherId), timeTeacher.StartTime, timeTeacher.FinishTime)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) cabinets.CabinetRepos
 
 func (p postgresRepository) GetCabinetById(id int64) (*core.Cabinet, error) {
 	var data []core.Cabinet
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinets WHERE id='%d'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinets WHERE id='%d'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (p postgresRepository) GetCabinetById(id int64) (*core.Cabinet, error) {
 
 func (p postgresRepository) GetCabinetTimesBySubjectId(subjectId int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE subject_id='%d' ORDER BY start_time", subjectId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE subject_id='%d' ORDER BY start_time", subjectId))
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (p postgresRepository) GetCabinetTimesBySubjectId(subjectId int64) (*[]core
 
 func (p postgresRepository) GetCabinetTimeById(cabinetId int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id='%d'", cabinetId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE cabinet_id='%d'", cabinetId))
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (p postgresRepository) GetCabinetTimeById(cabinetId int64) (*[]core.Cabinet
 
 func (p postgresRepository) GetCabinetTimesByCabinetId(cabinetId int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id='%d' ORDER BY start_time", cabinetId))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE cabinet_id='%d' ORDER BY start_time", cabinetId))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (p postgresRepository) GetCabinetTimesByCabinetId(cabinetId int64) (*[]core
 
 func (p postgresRepository) GetAllCabinetTimes(startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE start_time >= $1 AND  finish_time <= $2 ORDER BY start_time"), startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE start_time <= $1 AND  finish_time >= $2 ORDER BY start_time"), startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (p postgresRepository) GetAllCabinetTimes(startTime, finishTime int64) (*[]
 
 func (p postgresRepository) transformFromTakenTimeToFreeTime(startTime, finishTime int64, times *[]core.CabinetTime) (*[]core.CabinetTime, error) {
 	var result []core.CabinetTime
-	if times == nil {
+	if len(*times) == 0 {
 		result = []core.CabinetTime{{
 			StartTime:  startTime,
 			FinishTime: finishTime,
@@ -157,7 +157,7 @@ func (p postgresRepository) transformFromTakenTimeToFreeTime(startTime, finishTi
 
 func (p postgresRepository) GetCountCabinets() (int64, error) {
 	var data []int64
-	err := p.db.Select(&data, "SELECT count(*) FROM cabinetTimes")
+	err := p.db.Select(&data, "SELECT count(*) FROM public.cabinettimes")
 	if err != nil {
 		return 0, err
 	}
@@ -166,15 +166,16 @@ func (p postgresRepository) GetCountCabinets() (int64, error) {
 
 func (p postgresRepository) GetCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND start_time >= $2 AND finish_time <= $3"), cabinetId, startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE cabinet_id=$1 AND start_time >= $2 AND finish_time <= $3"), cabinetId, startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
 	return p.transformFromTakenTimeToFreeTime(startTime, finishTime, &data)
 }
+
 func (p postgresRepository) checkCabinetTimes(cabinetId, startTime, finishTime int64) (*[]core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE cabinet_id=$1 AND (start_time >= $2 AND start_time <= $3) OR (finish_time >= $2 AND finish_time <= $3) "), cabinetId, startTime, finishTime)
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinettimes WHERE cabinet_id=$1 AND (start_time >= $2 AND start_time <= $3) OR (finish_time >= $2 AND finish_time <= $3) "), cabinetId, startTime, finishTime)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +186,7 @@ func (p postgresRepository) checkCabinetTimes(cabinetId, startTime, finishTime i
 }
 
 func (p postgresRepository) CreateCabinet(cabinet *core.Cabinet) (*core.Cabinet, error) {
-	res, err := p.db.Query("INSERT INTO cabinets (name) VALUES ($1)", cabinet.Name)
+	res, err := p.db.Query("INSERT INTO public.cabinets (name) VALUES ($1)", cabinet.Name)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -200,7 +201,7 @@ func (p postgresRepository) CreateCabinetTime(cabinetTime *core.CabinetTime) (*c
 	if _, err := p.checkCabinetTimes(cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime); !errors.Is(err, constants.ErrCabinetTimeDBNotFound) {
 		return nil, constants.NewCodedError("Cabinet isn't free at this time, choose another one", fiber.StatusConflict)
 	}
-	res, err := p.db.Query("INSERT INTO cabinetTimes (subject_id, cabinet_id, start_time, finish_time) VALUES ($1, $2, $3, $4)", cabinetTime.SubjectId, cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime)
+	res, err := p.db.Query("INSERT INTO public.cabinettimes (subject_id, cabinet_id, start_time, finish_time) VALUES ($1, $2, $3, $4)", cabinetTime.SubjectId, cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -236,7 +237,7 @@ func (p postgresRepository) UpdateCabinetTime(cabinetTime *core.CabinetTime) (*c
 }
 
 func (p postgresRepository) DeleteCabinet(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM cabinets WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.cabinets WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -245,7 +246,7 @@ func (p postgresRepository) DeleteCabinet(id int64) error {
 }
 
 func (p postgresRepository) DeleteCabinetTime(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM cabinetTimes WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.cabinettimes WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -255,7 +256,7 @@ func (p postgresRepository) DeleteCabinetTime(id int64) error {
 
 func (p postgresRepository) getCabinet(cabinet *core.Cabinet) (*core.Cabinet, error) {
 	var data []core.Cabinet
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinets WHERE name='%s'", cabinet.Name))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinets WHERE name='%s'", cabinet.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +268,7 @@ func (p postgresRepository) getCabinet(cabinet *core.Cabinet) (*core.Cabinet, er
 
 func (p postgresRepository) getCabinetTime(cabinetTime *core.CabinetTime) (*core.CabinetTime, error) {
 	var data []core.CabinetTime
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM cabinetTimes WHERE subject_id='%d' AND cabinet_id='%d' AND start_time='%d' AND finish_time='%d'", cabinetTime.SubjectId, cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.cabinetTimes WHERE subject_id='%d' AND cabinet_id='%d' AND start_time='%d' AND finish_time='%d'", cabinetTime.SubjectId, cabinetTime.CabinetId, cabinetTime.StartTime, cabinetTime.FinishTime))
 	if err != nil {
 		return nil, err
 	}

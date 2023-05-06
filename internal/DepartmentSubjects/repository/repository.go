@@ -21,7 +21,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) departmentSubjects.De
 
 func (p postgresRepository) GetDepartmentSubjects(departmentId, limit, offset int64) (*[]departmentSubjects.DepartmentSubjects, int64, error) {
 	var data []departmentSubjects.DepartmentSubjects
-	queryStr := fmt.Sprintf("SELECT * FROM DepartmentSubjects WHERE department_id='%d'", departmentId)
+	queryStr := fmt.Sprintf("SELECT * FROM public.departmentsubjects WHERE department_id='%d'", departmentId)
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {
@@ -39,7 +39,7 @@ func (p postgresRepository) GetDepartmentSubjects(departmentId, limit, offset in
 		return nil, 0, nil
 	}
 	var length []int64
-	err = p.db.Select(&length, fmt.Sprintf("SELECT count(*) FROM DepartmentSubjects WHERE department_id='%d'", departmentId))
+	err = p.db.Select(&length, fmt.Sprintf("SELECT count(*) FROM public.departmentsubjects WHERE department_id='%d'", departmentId))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -48,7 +48,7 @@ func (p postgresRepository) GetDepartmentSubjects(departmentId, limit, offset in
 
 func (p postgresRepository) IsDepartmentSubjects(departmentId, subjectId int64) (bool, error) {
 	var data []bool
-	queryStr := fmt.Sprintf("select 1 from DepartmentSubjects where department_id='%d' AND subject_id='%d' limit 1", departmentId, subjectId)
+	queryStr := fmt.Sprintf("select 1 from public.departmentsubjects where department_id='%d' AND subject_id='%d' limit 1", departmentId, subjectId)
 
 	err := p.db.Select(&data, queryStr)
 	if err != nil {
@@ -61,7 +61,7 @@ func (p postgresRepository) IsDepartmentSubjects(departmentId, subjectId int64) 
 }
 
 func (p postgresRepository) AddDepartmentSubjects(departmentId, subjectId int64) error {
-	query := fmt.Sprintf("INSERT INTO DepartmentSubjects (department_id, subject_id) VALUES ('%d', '%d')", departmentId, subjectId)
+	query := fmt.Sprintf("INSERT INTO public.departmentsubjects (department_id, subject_id) VALUES ('%d', '%d')", departmentId, subjectId)
 
 	res, err := p.db.Query(query)
 	if res != nil {
@@ -71,7 +71,7 @@ func (p postgresRepository) AddDepartmentSubjects(departmentId, subjectId int64)
 }
 
 func (p postgresRepository) DeleteDepartmentSubjects(departmentId, subjectId int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM DepartmentSubjects WHERE department_id='%d' AND subject_id='%d'", departmentId, subjectId))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.departmentsubjects WHERE department_id='%d' AND subject_id='%d'", departmentId, subjectId))
 
 	if res != nil {
 		_ = res.Close()
@@ -80,7 +80,7 @@ func (p postgresRepository) DeleteDepartmentSubjects(departmentId, subjectId int
 }
 
 func (p postgresRepository) DeleteAll(departmentId int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM DepartmentSubjects WHERE department_id='%d'", departmentId))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.departmentsubjects WHERE department_id='%d'", departmentId))
 
 	if res != nil {
 		_ = res.Close()

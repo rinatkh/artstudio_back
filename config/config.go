@@ -12,10 +12,16 @@ type Config struct {
 	Logger   LoggerConfig
 	Postgres PostgresConfig
 	Service  ServiceConfig
+	Email    EmailConfig
+	Webp     WebpConfig
 }
 
 type LoggerConfig struct {
 	Level string
+}
+
+type WebpConfig struct {
+	Url string
 }
 
 type ServerConfig struct {
@@ -28,6 +34,13 @@ type ServiceConfig struct {
 	JwtTtl        int64
 	JwtSecret     string
 	TelegramToken string
+}
+
+type EmailConfig struct {
+	Host     string
+	Port     int
+	Email    string
+	Password string
 }
 
 type PostgresConfig struct {

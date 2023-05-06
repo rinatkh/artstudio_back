@@ -105,23 +105,25 @@ func (s *Server) MapHandlers(app *fiber.App) error {
 	}
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "*",
+		AllowOrigins:     "*",
+		AllowHeaders:     "Content-Type, Authorization",
+		AllowCredentials: true,
+		AllowMethods:     "GET, POST, PUT, DELETE, OPTIONS",
 	}))
-
+	api := app.Group("api/")
 	mw := middleware.NewMDWManager(s.cfg, userRepo)
 
-	authHTTP.MapAuthRoutes(app, authHandler)
-	oauthHTTP.MapOauthRoutes(app, oauthHandler, mw)
-	userHTTP.MapUserRoutes(app, userHandler, mw)
-	staticHTTP.MaStaticRoutes(app, staticHandler, mw)
-	subjectHTTP.MapSubjectRoutes(app, subjectHandler, mw)
-	departmentHTTP.MapDepartmentRoutes(app, departmentHandler, mw)
-	timeTeacherHTTP.MapTimeTeacherRoutes(app, timeTeacherHandler, mw)
-	statisticTeacherHTTP.MapStatisticTeacherRoutes(app, statisticTeacherHandler, mw)
-	statisticStudentHTTP.MapStatisticStudentRoutes(app, statisticStudentHandler, mw)
-	scheduleHTTP.MapSchedulesRoutes(app, scheduleHandler, mw)
-	cabinetHTTP.MapCabinetRoutes(app, cabinetHandler, mw)
+	authHTTP.MapAuthRoutes(api, authHandler)
+	oauthHTTP.MapOauthRoutes(api, oauthHandler, mw)
+	userHTTP.MapUserRoutes(api, userHandler, mw)
+	staticHTTP.MaStaticRoutes(api, staticHandler, mw)
+	subjectHTTP.MapSubjectRoutes(api, subjectHandler, mw)
+	departmentHTTP.MapDepartmentRoutes(api, departmentHandler, mw)
+	timeTeacherHTTP.MapTimeTeacherRoutes(api, timeTeacherHandler, mw)
+	statisticTeacherHTTP.MapStatisticTeacherRoutes(api, statisticTeacherHandler, mw)
+	statisticStudentHTTP.MapStatisticStudentRoutes(api, statisticStudentHandler, mw)
+	scheduleHTTP.MapSchedulesRoutes(api, scheduleHandler, mw)
+	cabinetHTTP.MapCabinetRoutes(api, cabinetHandler, mw)
 
 	return nil
 }

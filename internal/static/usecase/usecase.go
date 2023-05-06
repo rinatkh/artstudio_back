@@ -47,7 +47,7 @@ func (u StaticUseCase) UploadFile(fileHeader *multipart.FileHeader) (*static.Upl
 		return nil, err
 	}
 
-	url := "/" + filename
+	url := u.cfg.Webp.Url + "/" + filename
 	return &static.UploadFileResponse{URL: url}, nil
 }
 
@@ -75,6 +75,6 @@ func (u StaticUseCase) UploadImage(fileHeader *multipart.FileHeader) (*static.Up
 		return nil, err
 	}
 
-	url := "/" + filename
+	url := u.cfg.Webp.Url + "/" + filename
 	return &static.UploadImageResponse{URL: url}, nil
 }

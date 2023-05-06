@@ -25,7 +25,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) schedules.ScheduleRep
 
 func (p postgresRepository) GetScheduleById(id int64) (*core.Schedule, error) {
 	var data []core.Schedule
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM schedules WHERE id='%d'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.schedules WHERE id='%d'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func (p postgresRepository) GetScheduleById(id int64) (*core.Schedule, error) {
 
 func (p postgresRepository) GetTeacherSchedules(teacherId string, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id in (SELECT id FROM subjects WHERE teacher_id = %s) AND when_time >= $1 AND  when_time <= $2", teacherId)
+	queryStr := fmt.Sprintf("SELECT * FROM public.schedules WHERE subject_id in (SELECT id FROM subjects WHERE teacher_id = %s) AND when_time >= $1 AND  when_time <= $2", teacherId)
 	err := p.db.Select(
 		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
@@ -52,7 +52,7 @@ func (p postgresRepository) GetTeacherSchedules(teacherId string, startTime, fin
 
 func (p postgresRepository) GetStudentSchedules(studentId string, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE student_id = %s AND when_time >= $1 AND  when_time <= $2", studentId)
+	queryStr := fmt.Sprintf("SELECT * FROM public.schedules WHERE student_id = %s AND when_time >= $1 AND  when_time <= $2", studentId)
 	err := p.db.Select(
 		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
@@ -67,7 +67,7 @@ func (p postgresRepository) GetStudentSchedules(studentId string, startTime, fin
 
 func (p postgresRepository) GetSchedules(startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE when_time >= $1 AND  when_time <= $2")
+	queryStr := fmt.Sprintf("SELECT * FROM public.schedules WHERE when_time >= $1 AND  when_time <= $2")
 	err := p.db.Select(
 		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
@@ -82,7 +82,7 @@ func (p postgresRepository) GetSchedules(startTime, finishTime int64) (*[]core.S
 
 func (p postgresRepository) GetSubjectSchedules(subjectId int64, startTime, finishTime int64) (*[]core.Schedule, error) {
 	var data []core.Schedule
-	queryStr := fmt.Sprintf("SELECT * FROM schedules WHERE subject_id  = %d AND when_time >= $1 AND  when_time <= $2", subjectId)
+	queryStr := fmt.Sprintf("SELECT * FROM public.schedules WHERE subject_id  = %d AND when_time >= $1 AND  when_time <= $2", subjectId)
 	err := p.db.Select(
 		&data, queryStr, startTime, time.Unix(finishTime, 0).Add(consts.LessonTime+consts.Duration).Unix())
 
@@ -96,7 +96,7 @@ func (p postgresRepository) GetSubjectSchedules(subjectId int64, startTime, fini
 }
 
 func (p postgresRepository) CreateSchedule(schedule *core.Schedule) (*core.Schedule, error) {
-	res, err := p.db.Query("INSERT INTO schedules (subject_id, student_id, cabinet_id, when_time, is_paid, is_finished, is_confirmed, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", schedule.SubjectId, schedule.StudentId, schedule.CabinetId, schedule.WhenTime, schedule.IsPaid, schedule.IsFinished, schedule.IsConfirmed, schedule.Description)
+	res, err := p.db.Query("INSERT INTO public.schedules (subject_id, student_id, cabinet_id, when_time, is_paid, is_finished, is_confirmed, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", schedule.SubjectId, schedule.StudentId, schedule.CabinetId, schedule.WhenTime, schedule.IsPaid, schedule.IsFinished, schedule.IsConfirmed, schedule.Description)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -119,7 +119,7 @@ func (p postgresRepository) UpdateSchedule(schedule *core.Schedule) (*core.Sched
 }
 
 func (p postgresRepository) DeleteSchedule(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM schedules WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.schedules WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -128,7 +128,7 @@ func (p postgresRepository) DeleteSchedule(id int64) error {
 }
 
 func (p postgresRepository) DeleteScheduleBySubjectId(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM schedules WHERE subject_id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.schedules WHERE subject_id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -137,7 +137,7 @@ func (p postgresRepository) DeleteScheduleBySubjectId(id int64) error {
 }
 
 func (p postgresRepository) DeleteScheduleByStudentId(id string) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM schedules WHERE student_id='%s'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.schedules WHERE student_id='%s'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -148,7 +148,7 @@ func (p postgresRepository) DeleteScheduleByStudentId(id string) error {
 func (p postgresRepository) getSchedule(schedule *core.Schedule) (*core.Schedule, error) {
 	var data []core.Schedule
 
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM schedules WHERE subject_id='%d' AND student_id='%s' AND cabinet_id='%d' AND when_time='%d' AND is_paid='%t' AND is_finished='%t' AND is_confirmed='%t' AND description='%s'", schedule.SubjectId, schedule.StudentId, schedule.CabinetId, schedule.WhenTime, schedule.IsPaid, schedule.IsFinished, schedule.IsConfirmed, schedule.Description))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.schedules WHERE subject_id='%d' AND student_id='%s' AND cabinet_id='%d' AND when_time='%d' AND is_paid='%t' AND is_finished='%t' AND is_confirmed='%t' AND description='%s'", schedule.SubjectId, schedule.StudentId, schedule.CabinetId, schedule.WhenTime, schedule.IsPaid, schedule.IsFinished, schedule.IsConfirmed, schedule.Description))
 	if err != nil {
 		return nil, err
 	}

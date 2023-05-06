@@ -28,7 +28,6 @@ func (u AuthHandler) LogoutUser() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 
 		ctx.Cookie(utils.CreateHttpOnlyCookie(constants.CookieKeyAuthToken, "", 0))
-		ctx.Cookie(utils.CreateHttpOnlyCookie(constants.CookieKeySecretToken, "", 0))
 		return ctx.JSON(true)
 	}
 }
@@ -49,18 +48,27 @@ func (u AuthHandler) LoginUser() fiber.Handler {
 	}
 }
 
-func (u AuthHandler) SignupUser() fiber.Handler {
+func (u AuthHandler) SignupUserPre() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		var params dto.SignupUserRequest
 		if err := utils.ReadRequest(ctx, &params); err != nil {
 			return constants.InputError
 		}
 
-		data, err := u.authUC.SignupUser(&params)
+		data, err := u.authUC.SignupUserPre(&params)
 		if err != nil {
 			return err
 		}
-		ctx.Cookie(utils.CreateHttpOnlyCookie(constants.CookieKeyAuthToken, data.AuthToken, u.cfg.Service.JwtTtl))
+		return ctx.JSON(data)
+	}
+}
+
+func (u AuthHandler) SignupUserConfirmed() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		data, err := u.authUC.SignupUser(ctx.Params("user_id"))
+		if err != nil {
+			return err
+		}
 		return ctx.JSON(data)
 	}
 }

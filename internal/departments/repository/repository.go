@@ -23,7 +23,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) departments.Departmen
 
 func (p postgresRepository) GetDepartmentById(id int64) (*core.Department, error) {
 	var data []core.Department
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM departments WHERE id='%d'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.departments WHERE id='%d'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (p postgresRepository) GetDepartmentById(id int64) (*core.Department, error
 
 func (p postgresRepository) GetDepartments(limit, offset int64) (*[]core.Department, int64, error) {
 	var data []core.Department
-	queryStr := "SELECT * FROM departments WHERE id > 0"
+	queryStr := "SELECT * FROM public.departments WHERE id > 0"
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {
@@ -53,7 +53,7 @@ func (p postgresRepository) GetDepartments(limit, offset int64) (*[]core.Departm
 		return nil, 0, nil
 	}
 	var length []int64
-	err = p.db.Select(&length, "SELECT count(*) FROM Departments")
+	err = p.db.Select(&length, "SELECT count(*) FROM public.departments")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -61,7 +61,7 @@ func (p postgresRepository) GetDepartments(limit, offset int64) (*[]core.Departm
 }
 
 func (p postgresRepository) CreateDepartment(department *core.Department) (*core.Department, error) {
-	res, err := p.db.Query("INSERT INTO departments (name, image, description) VALUES ($1, $2, $3)", department.Name, department.Image, department.Description)
+	res, err := p.db.Query("INSERT INTO public.departments (name, image, description) VALUES ($1, $2, $3)", department.Name, department.Image, department.Description)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -87,7 +87,7 @@ func (p postgresRepository) UpdateDepartment(department *core.Department) (*core
 }
 
 func (p postgresRepository) DeleteDepartment(id int64) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM departments WHERE id='%d'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.departments WHERE id='%d'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -97,7 +97,7 @@ func (p postgresRepository) DeleteDepartment(id int64) error {
 
 func (p postgresRepository) getDepartment(department *core.Department) (*core.Department, error) {
 	var data []core.Department
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM departments WHERE name='%s' AND image='%s' and description='%s'", department.Name, department.Image, department.Description))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.departments WHERE name='%s' AND image='%s' and description='%s'", department.Name, department.Image, department.Description))
 	if err != nil {
 		return nil, err
 	}

@@ -8,8 +8,9 @@ import (
 )
 
 type Auth struct {
-	Id    string `db:"uuid"`
-	Email string `db:"email"`
+	Id          string `db:"uuid"`
+	Email       string `db:"email"`
+	IsConfirmed bool   `db:"is_confirmed"`
 	UserPassword
 }
 

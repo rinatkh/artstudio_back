@@ -7,4 +7,5 @@ type AuthRepository interface {
 	GetUserById(id string) (*core.Auth, error)
 	DeleteUser(id string) error
 	CreateUser(user *core.Auth) (*core.Auth, error)
+	UpdateUser(user *core.Auth) (*core.Auth, error)
 }

@@ -1,21 +1,30 @@
 Server:
-  host: '127.0.0.1'
-  port: '8080'
+  host: '0.0.0.0'
+  port: '8081'
   show_unknown_errors_in_response: 1
 
 Logger:
   level: 'debug'
 
 Postgres:
-  host: 'localhost'
+  host: 'service_postgres'
   port: '5432'
   user: 'postgres'
   password: 'postgres'
-  DBName: 'db'
+  DBName: 'docker'
   sslMode: 'disable'
   pgDriver: 'pgx'
+
+Webp:
+  url: 'http://localhost:3333'
 
 Service:
   JwtTtl: 604800
   JwtSecret: 'somesecretstringchangemeplease'
   TelegramToken: ''
+
+Email:
+  Host: 'imap.gmail.com'
+  Port: 993
+  Email: 'khairullinrinat.99@gmail.com'
+  Password: '77Upehed'

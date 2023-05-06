@@ -23,7 +23,7 @@ func NewPostgresRepository(db *sqlx.DB, log *logrus.Entry) users.UserRepository 
 
 func (p postgresRepository) GetUserById(id string) (*core.User, error) {
 	var data []core.User
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM users WHERE uuid='%s'", id))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.users WHERE uuid='%s'", id))
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (p postgresRepository) GetUserById(id string) (*core.User, error) {
 
 func (p postgresRepository) GetUsers(limit, offset int64) (*[]core.User, int64, error) {
 	var data []core.User
-	queryStr := "SELECT * FROM Users WHERE uuid <> ''"
+	queryStr := "SELECT * FROM public.users WHERE uuid <> ''"
 	if limit == 0 {
 		queryStr += " LIMIT 1"
 	} else {
@@ -53,7 +53,7 @@ func (p postgresRepository) GetUsers(limit, offset int64) (*[]core.User, int64, 
 		return nil, 0, nil
 	}
 	var length []int64
-	err = p.db.Select(&length, "SELECT count(*) FROM Users")
+	err = p.db.Select(&length, "SELECT count(*) FROM public.users")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -61,7 +61,7 @@ func (p postgresRepository) GetUsers(limit, offset int64) (*[]core.User, int64, 
 }
 
 func (p postgresRepository) CreateUser(user *core.User) (*core.User, error) {
-	res, err := p.db.Query("INSERT INTO users (firstname, surname, middlename, sex, birth_date, role, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", user.Firstname, user.Surname, user.Middlename, user.Sex, user.BirthDate, user.Role, user.Image, user.CreateAt)
+	res, err := p.db.Query("INSERT INTO public.users (firstname, surname, middlename, sex, birth_date, role, image, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", user.Firstname, user.Surname, user.Middlename, user.Sex, user.BirthDate, user.Role, user.Image, user.CreateAt)
 	if res != nil {
 		_ = res.Close()
 	}
@@ -84,7 +84,7 @@ func (p postgresRepository) UpdateUser(user *core.User) (*core.User, error) {
 }
 
 func (p postgresRepository) DeleteUser(id string) error {
-	res, err := p.db.Query(fmt.Sprintf("DELETE FROM users WHERE uuid='%s'", id))
+	res, err := p.db.Query(fmt.Sprintf("DELETE FROM public.users WHERE uuid='%s'", id))
 
 	if res != nil {
 		_ = res.Close()
@@ -95,7 +95,7 @@ func (p postgresRepository) DeleteUser(id string) error {
 func (p postgresRepository) getUser(user *core.User) (*core.User, error) {
 	var data []core.User
 
-	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM users WHERE firstname='%s' AND surname='%s' AND middlename='%s' AND role='%s' AND image='%s' AND sex='%s'", user.Firstname, user.Surname, user.Middlename, user.Role, user.Image, user.Sex))
+	err := p.db.Select(&data, fmt.Sprintf("SELECT * FROM public.users WHERE firstname='%s' AND surname='%s' AND middlename='%s' AND role='%s' AND image='%s' AND sex='%s'", user.Firstname, user.Surname, user.Middlename, user.Role, user.Image, user.Sex))
 	if err != nil {
 		return nil, err
 	}

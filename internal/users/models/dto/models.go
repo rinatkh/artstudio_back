@@ -6,7 +6,7 @@ type User struct {
 	Firstname  string `json:"firstname"`
 	Surname    string `json:"surname"`
 	Middlename string `json:"middlename,omitempty"`
-	Age        int    `json:"age"`
+	BirthDate  int64  `json:"birth_date"`
 	Sex        string `json:"sex"`
 	Image      string `json:"image"`
 	Role       string `json:"role"`

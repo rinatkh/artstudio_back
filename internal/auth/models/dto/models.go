@@ -14,10 +14,13 @@ type LoginUserRequest struct {
 }
 
 type SignupUserResponse struct {
-	dto.User
-	AuthToken string `json:"auth_token"`
+	Message string `json:"message"`
 }
 type LoginUserResponse struct {
-	dto.User
-	AuthToken string `json:"auth_token"`
+	User      dto.User `json:"user"`
+	AuthToken string   `json:"auth_token"`
+}
+
+type SignupPreResponse struct {
+	Message string `json:"message"`
 }
